@@ -47,34 +47,6 @@ export const Canvas = () => {
 
   return (
     <div className="h-screen bg-[#0f1116] text-white flex">
-      <div className="w-16 bg-[#0f1116] border-r border-neutral-800">
-        <div className="flex flex-col items-center py-4 space-y-6">
-          <button className="w-10 h-10 flex items-center justify-center bg-neutral-800 rounded-lg">
-            A
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            ⚪
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            ⬜
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            ⭐
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            ⚡
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center hover:bg-neutral-800 rounded-lg">
-            ⚙️
-          </button>
-        </div>
-      </div>
       <div className="flex flex-col flex-1">
         <div className="flex-1 flex">
           <Sidebar canvas={canvas} />
