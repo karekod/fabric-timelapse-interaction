@@ -16,33 +16,32 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       <div className="flex-1 p-4">
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm text-neutral-400 mb-2">Basic text</h3>
+            <div className="text-xs text-neutral-500 mb-4">ADD TEXT</div>
             <div className="space-y-2">
-              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                Add a heading
+              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
+                <span className="text-sm font-semibold">H1</span>
+                <span>Heading</span>
               </button>
-              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                Add a subheading
+              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
+                <span className="text-sm font-semibold">H2</span>
+                <span>Subheading</span>
               </button>
-              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                Add body text
+              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
+                <span className="text-sm font-semibold">T</span>
+                <span>Body Text</span>
               </button>
             </div>
           </div>
           <div>
-            <h3 className="text-sm text-neutral-400 mb-2">Animated</h3>
-            <div className="grid grid-cols-3 gap-2">
-              <button className="p-4 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex flex-col items-center gap-2">
-                <span className="text-2xl">T</span>
-                <span className="text-xs">Fade in</span>
+            <div className="text-xs text-neutral-500 mb-4">STYLES</div>
+            <div className="space-y-2">
+              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
+                <span className="text-sm">Aa</span>
+                <span>Typography</span>
               </button>
-              <button className="p-4 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex flex-col items-center gap-2">
-                <span className="text-2xl">T</span>
-                <span className="text-xs">Type</span>
-              </button>
-              <button className="p-4 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex flex-col items-center gap-2">
-                <span className="text-2xl">T</span>
-                <span className="text-xs">Slide</span>
+              <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
+                <span className="text-sm">⟷</span>
+                <span>Alignment</span>
               </button>
             </div>
           </div>

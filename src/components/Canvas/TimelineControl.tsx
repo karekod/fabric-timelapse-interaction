@@ -1,4 +1,3 @@
-
 import { Slider } from "@/components/ui/slider";
 import { useEffect } from "react";
 
@@ -39,12 +38,9 @@ export const TimelineControl = ({
       <div className="space-y-4">
         <div className="relative">
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-xs text-neutral-400">
-            <span>0s</span>
-            <span>1s</span>
-            <span>2s</span>
-            <span>3s</span>
-            <span>4s</span>
-            <span>5s</span>
+            {[...Array(6)].map((_, i) => (
+              <span key={i}>{i.toFixed(2)}</span>
+            ))}
           </div>
           <div className="h-20 border-t border-b border-neutral-800">
             <Slider
