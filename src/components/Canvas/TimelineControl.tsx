@@ -18,10 +18,7 @@ export const TimelineControl = ({
 
     const animate = () => {
       if (isPlaying) {
-        setCurrentTime((prev) => {
-          const next = prev >= 100 ? 0 : prev + 0.5;
-          return next;
-        });
+        setCurrentTime((currentTime >= 100 ? 0 : currentTime + 0.5));
         animationFrame = requestAnimationFrame(animate);
       }
     };
@@ -35,28 +32,30 @@ export const TimelineControl = ({
         cancelAnimationFrame(animationFrame);
       }
     };
-  }, [isPlaying, setCurrentTime]);
+  }, [isPlaying, currentTime, setCurrentTime]);
 
   return (
-    <div className="bg-neutral-800 p-4 rounded-lg border border-neutral-700">
+    <div className="bg-[#0f1116] p-4">
       <div className="space-y-4">
         <div className="relative">
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-xs text-neutral-400">
             <span>0s</span>
+            <span>1s</span>
             <span>2s</span>
+            <span>3s</span>
             <span>4s</span>
-            <span>6s</span>
-            <span>8s</span>
-            <span>10s</span>
+            <span>5s</span>
           </div>
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={100}
-            step={0.1}
-            onValueChange={(value) => setCurrentTime(value[0])}
-            className="py-4"
-          />
+          <div className="h-20 border-t border-b border-neutral-800">
+            <Slider
+              value={[currentTime]}
+              min={0}
+              max={100}
+              step={0.1}
+              onValueChange={(value) => setCurrentTime(value[0])}
+              className="py-4"
+            />
+          </div>
         </div>
       </div>
     </div>
