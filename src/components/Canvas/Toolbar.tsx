@@ -5,11 +5,11 @@ import {
   Square, Circle, Type, Trash2, 
   Move, RotateCw, ZoomIn, ZoomOut 
 } from "lucide-react";
-import { fabric } from "fabric";
+import { Canvas as FabricCanvas, Circle as FabricCircle, Rect, IText } from "fabric";
 
 interface ToolbarProps {
-  canvas: fabric.Canvas | null;
-  selectedObject: fabric.Object | null;
+  canvas: FabricCanvas | null;
+  selectedObject: any;
 }
 
 export const Toolbar = ({ canvas, selectedObject }: ToolbarProps) => {
@@ -19,7 +19,7 @@ export const Toolbar = ({ canvas, selectedObject }: ToolbarProps) => {
     let object;
     switch (type) {
       case "rectangle":
-        object = new fabric.Rect({
+        object = new Rect({
           left: 100,
           top: 100,
           fill: "#ffffff",
@@ -28,7 +28,7 @@ export const Toolbar = ({ canvas, selectedObject }: ToolbarProps) => {
         });
         break;
       case "circle":
-        object = new fabric.Circle({
+        object = new FabricCircle({
           left: 100,
           top: 100,
           fill: "#ffffff",
@@ -36,7 +36,7 @@ export const Toolbar = ({ canvas, selectedObject }: ToolbarProps) => {
         });
         break;
       case "text":
-        object = new fabric.IText("Double click to edit", {
+        object = new IText("Double click to edit", {
           left: 100,
           top: 100,
           fill: "#ffffff",
@@ -120,4 +120,3 @@ export const Toolbar = ({ canvas, selectedObject }: ToolbarProps) => {
     </div>
   );
 };
-

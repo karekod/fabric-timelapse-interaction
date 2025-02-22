@@ -19,8 +19,8 @@ export const TimelineControl = ({
     const animate = () => {
       if (isPlaying) {
         setCurrentTime((prev) => {
-          if (prev >= 100) return 0;
-          return prev + 0.5;
+          const next = prev >= 100 ? 0 : prev + 0.5;
+          return next;
         });
         animationFrame = requestAnimationFrame(animate);
       }
@@ -62,4 +62,3 @@ export const TimelineControl = ({
     </div>
   );
 };
-

@@ -1,27 +1,27 @@
 
 import { useEffect, useRef, useState } from "react";
-import { fabric } from "fabric";
+import { Canvas as FabricCanvas } from "fabric";
 import { Toolbar } from "./Toolbar";
 import { TimelineControl } from "./TimelineControl";
 import { AnimationPanel } from "./AnimationPanel";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [canvas, setCanvas] = useState<fabric.Canvas | null>(null);
-  const [selectedObject, setSelectedObject] = useState<fabric.Object | null>(null);
+  const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
+  const [selectedObject, setSelectedObject] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
     if (!canvasRef.current) return;
 
-    const fabricCanvas = new fabric.Canvas(canvasRef.current, {
+    const fabricCanvas = new FabricCanvas(canvasRef.current, {
       width: window.innerWidth * 0.8,
       height: window.innerHeight * 0.6,
       backgroundColor: "#1a1a1a",
     });
 
-    fabricCanvas.on("selection:created", (e) => {
+    fabricCanvas.on("selection:created", () => {
       setSelectedObject(fabricCanvas.getActiveObject());
     });
 
@@ -72,4 +72,3 @@ export const Canvas = () => {
     </div>
   );
 };
-
