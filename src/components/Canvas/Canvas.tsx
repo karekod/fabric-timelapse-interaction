@@ -22,10 +22,14 @@ interface Keyframe {
   properties: Record<string, any>;
 }
 
+interface ExtendedFabricObject extends FabricObject {
+  customId?: string;
+}
+
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvas, setCanvas] = useState<FabricCanvas | null>(null);
-  const [selectedObject, setSelectedObject] = useState<FabricObject | null>(null);
+  const [selectedObject, setSelectedObject] = useState<ExtendedFabricObject | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
@@ -40,7 +44,11 @@ export const Canvas = () => {
     });
 
     fabricCanvas.on("selection:created", (e) => {
-      setSelectedObject(fabricCanvas.getActiveObject());
+      const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
+      if (!selectedObj.customId) {
+        selectedObj.customId = crypto.randomUUID();
+      }
+      setSelectedObject(selectedObj);
     });
 
     fabricCanvas.on("selection:cleared", () => {
@@ -64,11 +72,11 @@ export const Canvas = () => {
   }, []);
 
   const addTimelineLayer = () => {
-    if (!selectedObject) return;
+    if (!selectedObject || !selectedObject.customId) return;
 
     const newLayer: TimelineLayer = {
       id: crypto.randomUUID(),
-      elementId: selectedObject.id!,
+      elementId: selectedObject.customId,
       name: selectedObject.type || 'Element',
       keyframes: [],
     };

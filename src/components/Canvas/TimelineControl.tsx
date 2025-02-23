@@ -1,4 +1,3 @@
-
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
@@ -69,24 +68,22 @@ export const TimelineControl = ({
   }, [isPlaying, currentTime, setCurrentTime]);
 
   const addKeyframe = (layerId: string, type: Keyframe['animationType']) => {
-    setTimelineLayers(prevLayers =>
-      prevLayers.map(layer => {
-        if (layer.id === layerId) {
-          const newKeyframe: Keyframe = {
-            id: crypto.randomUUID(),
-            startTime: currentTime,
-            duration: 20,
-            animationType: type,
-            properties: {},
-          };
-          return {
-            ...layer,
-            keyframes: [...layer.keyframes, newKeyframe],
-          };
-        }
-        return layer;
-      })
-    );
+    setTimelineLayers(timelineLayers.map(layer => {
+      if (layer.id === layerId) {
+        const newKeyframe: Keyframe = {
+          id: crypto.randomUUID(),
+          startTime: currentTime,
+          duration: 20,
+          animationType: type,
+          properties: {},
+        };
+        return {
+          ...layer,
+          keyframes: [...layer.keyframes, newKeyframe],
+        };
+      }
+      return layer;
+    }));
   };
 
   const handleDragStart = (
@@ -107,45 +104,40 @@ export const TimelineControl = ({
     const deltaY = e.clientY - startDragY;
 
     if (dragType === "layer") {
-      // Reorder layers
       const layerHeight = 40;
       const moveAmount = Math.round(deltaY / layerHeight);
       if (moveAmount !== 0) {
-        setTimelineLayers(prevLayers => {
-          const layers = [...prevLayers];
-          const currentIndex = layers.findIndex(l => l.id === draggingItem);
-          const newIndex = Math.max(0, Math.min(layers.length - 1, currentIndex + moveAmount));
-          const [layer] = layers.splice(currentIndex, 1);
-          layers.splice(newIndex, 0, layer);
-          return layers;
-        });
+        const newLayers = [...timelineLayers];
+        const currentIndex = newLayers.findIndex(l => l.id === draggingItem);
+        const newIndex = Math.max(0, Math.min(newLayers.length - 1, currentIndex + moveAmount));
+        const [layer] = newLayers.splice(currentIndex, 1);
+        newLayers.splice(newIndex, 0, layer);
+        setTimelineLayers(newLayers);
         setStartDragY(e.clientY);
       }
     } else {
-      // Move keyframes
-      setTimelineLayers(prevLayers =>
-        prevLayers.map(layer => ({
-          ...layer,
-          keyframes: layer.keyframes.map(keyframe => {
-            if (keyframe.id === draggingItem) {
-              if (dragType === "keyframe") {
-                const newStartTime = Math.max(
-                  0,
-                  Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * 0.1)
-                );
-                return { ...keyframe, startTime: newStartTime };
-              } else if (dragType === "duration") {
-                const newDuration = Math.max(
-                  5,
-                  Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * 0.1)
-                );
-                return { ...keyframe, duration: newDuration };
-              }
+      const updatedLayers = timelineLayers.map(layer => ({
+        ...layer,
+        keyframes: layer.keyframes.map(keyframe => {
+          if (keyframe.id === draggingItem) {
+            if (dragType === "keyframe") {
+              const newStartTime = Math.max(
+                0,
+                Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * 0.1)
+              );
+              return { ...keyframe, startTime: newStartTime };
+            } else if (dragType === "duration") {
+              const newDuration = Math.max(
+                5,
+                Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * 0.1)
+              );
+              return { ...keyframe, duration: newDuration };
             }
-            return keyframe;
-          }),
-        }))
-      );
+          }
+          return keyframe;
+        }),
+      }));
+      setTimelineLayers(updatedLayers);
       setStartDragX(e.clientX);
     }
   };
@@ -157,7 +149,6 @@ export const TimelineControl = ({
 
   return (
     <div className="bg-[#0f1116] p-4 select-none flex">
-      {/* Timeline layers list */}
       <div className="w-48 border-r border-neutral-800 pr-4 space-y-2">
         {timelineLayers.map(layer => (
           <div
@@ -215,7 +206,6 @@ export const TimelineControl = ({
         ))}
       </div>
 
-      {/* Timeline grid */}
       <div className="flex-1">
         <div className="relative">
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-xs text-neutral-400">
@@ -225,19 +215,16 @@ export const TimelineControl = ({
           </div>
           <div className="border-t border-b border-neutral-800">
             <div className="relative" style={{ height: `${timelineLayers.length * 40}px` }}>
-              {/* Time indicator */}
               <div
                 className="absolute top-0 bottom-0 w-px bg-blue-500 transition-all duration-100"
                 style={{ left: `${currentTime}%` }}
               />
 
-              {/* Timeline tracks */}
               {timelineLayers.map((layer, index) => (
                 <div
                   key={layer.id}
                   className="h-10 border-b border-neutral-800 last:border-b-0"
                 >
-                  {/* Keyframes */}
                   {layer.keyframes.map(keyframe => (
                     <div
                       key={keyframe.id}
@@ -269,7 +256,6 @@ export const TimelineControl = ({
                             {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
                           </span>
                         </div>
-                        {/* Resize handle */}
                         <div
                           className="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
                           onMouseDown={e => {
@@ -283,7 +269,6 @@ export const TimelineControl = ({
                 </div>
               ))}
 
-              {/* Grid lines */}
               <div className="absolute inset-0 grid grid-cols-10 pointer-events-none">
                 {[...Array(10)].map((_, i) => (
                   <div key={i} className="border-l border-neutral-800 h-full" />
