@@ -1,19 +1,22 @@
 
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
-import { DragHandleDots2Icon } from "@radix-ui/react-icons";
 import { 
-  Ghost, 
   Move, 
   Maximize2, 
-  RotateCw, 
-  Palette,
+  RotateCw,
+  GripVertical,
   EyeOff,
   Trash2,
-  Copy,
-  GripVertical
+  Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TimelineLayer {
   id: string;
@@ -27,7 +30,7 @@ interface Keyframe {
   id: string;
   startTime: number;
   duration: number;
-  animationType: 'move' | 'scale' | 'color' | 'opacity' | 'rotate';
+  animationType: 'move' | 'scale' | 'rotate';
   properties: Record<string, any>;
 }
 
@@ -99,6 +102,17 @@ export const TimelineControl = ({
     setTimelineLayers([...timelineLayers, newLayer]);
   };
 
+  const changeAnimationType = (keyframeId: string, newType: Keyframe['animationType']) => {
+    setTimelineLayers(timelineLayers.map(layer => ({
+      ...layer,
+      keyframes: layer.keyframes.map(keyframe => 
+        keyframe.id === keyframeId 
+          ? { ...keyframe, animationType: newType }
+          : keyframe
+      )
+    })));
+  };
+
   const handleDragStart = (
     e: React.MouseEvent,
     itemId: string,
@@ -135,16 +149,17 @@ export const TimelineControl = ({
         keyframes: layer.keyframes.map(keyframe => {
           if (keyframe.id === draggingItem) {
             if (dragType === "keyframe") {
-              const moveSpeed = 0.2; // Increased for easier movement
+              const moveSpeed = 0.5; // Increased for smoother movement
               const newStartTime = Math.max(
                 0,
                 Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * moveSpeed)
               );
               return { ...keyframe, startTime: newStartTime };
             } else if (dragType === "duration") {
+              const resizeSpeed = 0.3; // Increased for smoother resizing
               const newDuration = Math.max(
                 5,
-                Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * 0.1)
+                Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * resizeSpeed)
               );
               return { ...keyframe, duration: newDuration };
             }
@@ -241,22 +256,38 @@ export const TimelineControl = ({
                     >
                       <div 
                         className={`
-                          bg-black/80 border border-blue-500 rounded-md w-full h-full 
+                          bg-black border border-blue-500 rounded-md w-full h-full 
                           flex items-center group-hover:border-blue-400
                           ${draggingItem === keyframe.id ? 'border-blue-400' : ''}
                           ${!layer.isVisible ? 'opacity-50' : ''}
                         `}
                       >
-                        <div className="px-2 flex items-center gap-2 min-w-0">
-                          {keyframe.animationType === 'move' && <Move className="w-3 h-3" />}
-                          {keyframe.animationType === 'scale' && <Maximize2 className="w-3 h-3" />}
-                          {keyframe.animationType === 'rotate' && <RotateCw className="w-3 h-3" />}
-                          {keyframe.animationType === 'opacity' && <Ghost className="w-3 h-3" />}
-                          {keyframe.animationType === 'color' && <Palette className="w-3 h-3" />}
-                          <span className="text-xs text-neutral-400">
-                            {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
-                          </span>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <div className="px-2 flex items-center gap-2 min-w-0 cursor-pointer">
+                              {keyframe.animationType === 'move' && <Move className="w-4 h-4" />}
+                              {keyframe.animationType === 'scale' && <Maximize2 className="w-4 h-4" />}
+                              {keyframe.animationType === 'rotate' && <RotateCw className="w-4 h-4" />}
+                              <span className="text-xs font-medium">
+                                {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
+                              </span>
+                            </div>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'move')}>
+                              <Move className="w-4 h-4 mr-2" />
+                              Move
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'scale')}>
+                              <Maximize2 className="w-4 h-4 mr-2" />
+                              Scale
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'rotate')}>
+                              <RotateCw className="w-4 h-4 mr-2" />
+                              Rotate
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                         <div
                           className="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
                           onMouseDown={e => {
