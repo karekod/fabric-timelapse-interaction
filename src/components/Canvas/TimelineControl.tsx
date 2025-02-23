@@ -1,21 +1,12 @@
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { 
-  Move, 
-  Maximize2, 
-  RotateCw,
   GripVertical,
   EyeOff,
   Trash2,
   Copy
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { TimelineLayer, Keyframe } from "@/types/animation";
 
 interface TimelineControlProps {
@@ -246,32 +237,11 @@ export const TimelineControl = ({
                           ${!layer.isVisible ? 'opacity-50' : ''}
                         `}
                       >
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <div className="px-2 flex items-center gap-2 min-w-0 cursor-pointer">
-                              {keyframe.animationType === 'move' && <Move className="w-4 h-4" />}
-                              {keyframe.animationType === 'scale' && <Maximize2 className="w-4 h-4" />}
-                              {keyframe.animationType === 'rotate' && <RotateCw className="w-4 h-4" />}
-                              <span className="text-xs font-medium">
-                                {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
-                              </span>
-                            </div>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'move')}>
-                              <Move className="w-4 h-4 mr-2" />
-                              Move
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'scale')}>
-                              <Maximize2 className="w-4 h-4 mr-2" />
-                              Scale
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'rotate')}>
-                              <RotateCw className="w-4 h-4 mr-2" />
-                              Rotate
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="px-2 min-w-0">
+                          <span className="text-xs font-medium text-white">
+                            {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
+                          </span>
+                        </div>
                         <div
                           className="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
                           onMouseDown={e => {

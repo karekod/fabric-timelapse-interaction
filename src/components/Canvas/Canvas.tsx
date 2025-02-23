@@ -88,17 +88,6 @@ export const Canvas = () => {
     setTimelineLayers(prev => [...prev, newLayer]);
   };
 
-  const AnimationButton = ({ type, icon: Icon }: { type: Keyframe['animationType'], icon: any }) => (
-    <Button
-      size="icon"
-      variant={selectedAnimation === type ? "default" : "ghost"}
-      className="h-8 w-8"
-      onClick={() => setSelectedAnimation(type)}
-    >
-      <Icon className="w-4 h-4" />
-    </Button>
-  );
-
   return (
     <div className="h-screen bg-[#0f1116] text-white flex">
       <div className="flex flex-col flex-1">
@@ -109,12 +98,33 @@ export const Canvas = () => {
               <canvas ref={canvasRef} />
               {selectedObject && (
                 <div className="absolute top-4 right-4 flex flex-col items-end gap-4">
-                  <div className="flex items-center gap-2 bg-neutral-900/50 p-2 rounded-lg">
-                    <AnimationButton type="move" icon={Move} />
-                    <AnimationButton type="scale" icon={Maximize2} />
-                    <AnimationButton type="rotate" icon={RotateCw} />
-                  </div>
                   <div className="flex flex-col gap-2 bg-neutral-900/50 p-2 rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="icon"
+                        variant={selectedAnimation === 'move' ? "default" : "ghost"}
+                        className="h-8 w-8"
+                        onClick={() => setSelectedAnimation('move')}
+                      >
+                        <Move className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant={selectedAnimation === 'scale' ? "default" : "ghost"}
+                        className="h-8 w-8"
+                        onClick={() => setSelectedAnimation('scale')}
+                      >
+                        <Maximize2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant={selectedAnimation === 'rotate' ? "default" : "ghost"}
+                        className="h-8 w-8"
+                        onClick={() => setSelectedAnimation('rotate')}
+                      >
+                        <RotateCw className="w-4 h-4" />
+                      </Button>
+                    </div>
                     <div className="flex gap-2 items-center">
                       <Input
                         type="number"
