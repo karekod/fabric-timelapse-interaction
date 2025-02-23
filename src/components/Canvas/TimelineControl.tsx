@@ -1,3 +1,4 @@
+
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
@@ -7,7 +8,10 @@ import {
   Maximize2, 
   RotateCw, 
   Palette,
-  PlusCircle
+  EyeOff,
+  Trash2,
+  Copy,
+  GripVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,6 +20,7 @@ interface TimelineLayer {
   elementId: string;
   name: string;
   keyframes: Keyframe[];
+  isVisible?: boolean;
 }
 
 interface Keyframe {
@@ -67,23 +72,31 @@ export const TimelineControl = ({
     };
   }, [isPlaying, currentTime, setCurrentTime]);
 
-  const addKeyframe = (layerId: string, type: Keyframe['animationType']) => {
-    setTimelineLayers(timelineLayers.map(layer => {
-      if (layer.id === layerId) {
-        const newKeyframe: Keyframe = {
-          id: crypto.randomUUID(),
-          startTime: currentTime,
-          duration: 20,
-          animationType: type,
-          properties: {},
-        };
-        return {
-          ...layer,
-          keyframes: [...layer.keyframes, newKeyframe],
-        };
-      }
-      return layer;
-    }));
+  const toggleLayerVisibility = (layerId: string) => {
+    setTimelineLayers(timelineLayers.map(layer => 
+      layer.id === layerId ? { ...layer, isVisible: !layer.isVisible } : layer
+    ));
+  };
+
+  const deleteLayer = (layerId: string) => {
+    setTimelineLayers(timelineLayers.filter(layer => layer.id !== layerId));
+  };
+
+  const duplicateLayer = (layerId: string) => {
+    const layerToDuplicate = timelineLayers.find(layer => layer.id === layerId);
+    if (!layerToDuplicate) return;
+
+    const newLayer: TimelineLayer = {
+      ...layerToDuplicate,
+      id: crypto.randomUUID(),
+      name: `${layerToDuplicate.name} (copy)`,
+      keyframes: layerToDuplicate.keyframes.map(keyframe => ({
+        ...keyframe,
+        id: crypto.randomUUID()
+      }))
+    };
+
+    setTimelineLayers([...timelineLayers, newLayer]);
   };
 
   const handleDragStart = (
@@ -91,6 +104,7 @@ export const TimelineControl = ({
     itemId: string,
     type: "layer" | "keyframe" | "duration"
   ) => {
+    e.stopPropagation();
     setDraggingItem(itemId);
     setDragType(type);
     setStartDragX(e.clientX);
@@ -116,14 +130,15 @@ export const TimelineControl = ({
         setStartDragY(e.clientY);
       }
     } else {
-      const updatedLayers = timelineLayers.map(layer => ({
+      setTimelineLayers(timelineLayers.map(layer => ({
         ...layer,
         keyframes: layer.keyframes.map(keyframe => {
           if (keyframe.id === draggingItem) {
             if (dragType === "keyframe") {
+              const moveSpeed = 0.2; // Increased for easier movement
               const newStartTime = Math.max(
                 0,
-                Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * 0.1)
+                Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * moveSpeed)
               );
               return { ...keyframe, startTime: newStartTime };
             } else if (dragType === "duration") {
@@ -136,8 +151,7 @@ export const TimelineControl = ({
           }
           return keyframe;
         }),
-      }));
-      setTimelineLayers(updatedLayers);
+      })));
       setStartDragX(e.clientX);
     }
   };
@@ -154,52 +168,38 @@ export const TimelineControl = ({
           <div
             key={layer.id}
             className="h-10 flex items-center justify-between group"
-            onMouseDown={e => handleDragStart(e, layer.id, "layer")}
           >
-            <div className="flex items-center gap-2">
-              <DragHandleDots2Icon className="w-4 h-4 text-neutral-400" />
-              <span className="text-sm truncate">{layer.name}</span>
+            <div 
+              className="flex items-center gap-2 flex-1"
+              onMouseDown={e => handleDragStart(e, layer.id, "layer")}
+            >
+              <GripVertical className="w-4 h-4 text-neutral-400 cursor-move" />
+              <span className="text-sm truncate flex-1">{layer.name}</span>
             </div>
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+            <div className="flex gap-1">
               <Button
                 size="icon"
                 variant="ghost"
                 className="h-6 w-6"
-                onClick={() => addKeyframe(layer.id, 'move')}
+                onClick={() => toggleLayerVisibility(layer.id)}
               >
-                <Move className="w-3 h-3" />
+                <EyeOff className="w-3 h-3" />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 className="h-6 w-6"
-                onClick={() => addKeyframe(layer.id, 'scale')}
+                onClick={() => deleteLayer(layer.id)}
               >
-                <Maximize2 className="w-3 h-3" />
+                <Trash2 className="w-3 h-3" />
               </Button>
               <Button
                 size="icon"
                 variant="ghost"
                 className="h-6 w-6"
-                onClick={() => addKeyframe(layer.id, 'rotate')}
+                onClick={() => duplicateLayer(layer.id)}
               >
-                <RotateCw className="w-3 h-3" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-                onClick={() => addKeyframe(layer.id, 'opacity')}
-              >
-                <Ghost className="w-3 h-3" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-                onClick={() => addKeyframe(layer.id, 'color')}
-              >
-                <Palette className="w-3 h-3" />
+                <Copy className="w-3 h-3" />
               </Button>
             </div>
           </div>
@@ -228,7 +228,7 @@ export const TimelineControl = ({
                   {layer.keyframes.map(keyframe => (
                     <div
                       key={keyframe.id}
-                      className="absolute h-8 mt-1 flex items-center group"
+                      className="absolute h-8 mt-1 flex items-center group cursor-move"
                       style={{
                         left: `${keyframe.startTime}%`,
                         width: `${keyframe.duration}%`,
@@ -241,9 +241,10 @@ export const TimelineControl = ({
                     >
                       <div 
                         className={`
-                          bg-blue-500/20 border border-blue-500 rounded-md w-full h-full 
+                          bg-black/80 border border-blue-500 rounded-md w-full h-full 
                           flex items-center group-hover:border-blue-400
                           ${draggingItem === keyframe.id ? 'border-blue-400' : ''}
+                          ${!layer.isVisible ? 'opacity-50' : ''}
                         `}
                       >
                         <div className="px-2 flex items-center gap-2 min-w-0">
