@@ -2,48 +2,48 @@
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { DragHandleDots2Icon } from "@radix-ui/react-icons";
+import { 
+  Ghost, 
+  Move, 
+  Maximize2, 
+  RotateCw, 
+  Palette,
+  PlusCircle
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-interface TimelineItem {
+interface TimelineLayer {
   id: string;
+  elementId: string;
   name: string;
-  type: string;
+  keyframes: Keyframe[];
+}
+
+interface Keyframe {
+  id: string;
   startTime: number;
   duration: number;
-  track: number;
+  animationType: 'move' | 'scale' | 'color' | 'opacity' | 'rotate';
+  properties: Record<string, any>;
 }
 
 interface TimelineControlProps {
   currentTime: number;
   setCurrentTime: (time: number) => void;
   isPlaying: boolean;
+  timelineLayers: TimelineLayer[];
+  setTimelineLayers: (layers: TimelineLayer[]) => void;
 }
 
 export const TimelineControl = ({
   currentTime,
   setCurrentTime,
   isPlaying,
+  timelineLayers,
+  setTimelineLayers,
 }: TimelineControlProps) => {
-  const [items, setItems] = useState<TimelineItem[]>([
-    {
-      id: "1",
-      name: "Heading Text",
-      type: "text",
-      startTime: 10,
-      duration: 20,
-      track: 0,
-    },
-    {
-      id: "2",
-      name: "Circle Shape",
-      type: "shape",
-      startTime: 30,
-      duration: 15,
-      track: 1,
-    },
-  ]);
-
   const [draggingItem, setDraggingItem] = useState<string | null>(null);
-  const [dragType, setDragType] = useState<"position" | "duration" | null>(null);
+  const [dragType, setDragType] = useState<"layer" | "keyframe" | "duration" | null>(null);
   const [startDragX, setStartDragX] = useState(0);
   const [startDragY, setStartDragY] = useState(0);
 
@@ -68,10 +68,31 @@ export const TimelineControl = ({
     };
   }, [isPlaying, currentTime, setCurrentTime]);
 
+  const addKeyframe = (layerId: string, type: Keyframe['animationType']) => {
+    setTimelineLayers(prevLayers =>
+      prevLayers.map(layer => {
+        if (layer.id === layerId) {
+          const newKeyframe: Keyframe = {
+            id: crypto.randomUUID(),
+            startTime: currentTime,
+            duration: 20,
+            animationType: type,
+            properties: {},
+          };
+          return {
+            ...layer,
+            keyframes: [...layer.keyframes, newKeyframe],
+          };
+        }
+        return layer;
+      })
+    );
+  };
+
   const handleDragStart = (
     e: React.MouseEvent,
     itemId: string,
-    type: "position" | "duration"
+    type: "layer" | "keyframe" | "duration"
   ) => {
     setDraggingItem(itemId);
     setDragType(type);
@@ -85,26 +106,48 @@ export const TimelineControl = ({
     const deltaX = e.clientX - startDragX;
     const deltaY = e.clientY - startDragY;
 
-    setItems(prevItems =>
-      prevItems.map(item => {
-        if (item.id === draggingItem) {
-          if (dragType === "position") {
-            // Move timeline position horizontally and track vertically
-            const newStartTime = Math.max(0, Math.min(100 - item.duration, item.startTime + deltaX * 0.1));
-            const newTrack = Math.max(0, Math.min(3, item.track + Math.round(deltaY / 40)));
-            return { ...item, startTime: newStartTime, track: newTrack };
-          } else {
-            // Adjust duration
-            const newDuration = Math.max(5, Math.min(100 - item.startTime, item.duration + deltaX * 0.1));
-            return { ...item, duration: newDuration };
-          }
-        }
-        return item;
-      })
-    );
-
-    setStartDragX(e.clientX);
-    setStartDragY(e.clientY);
+    if (dragType === "layer") {
+      // Reorder layers
+      const layerHeight = 40;
+      const moveAmount = Math.round(deltaY / layerHeight);
+      if (moveAmount !== 0) {
+        setTimelineLayers(prevLayers => {
+          const layers = [...prevLayers];
+          const currentIndex = layers.findIndex(l => l.id === draggingItem);
+          const newIndex = Math.max(0, Math.min(layers.length - 1, currentIndex + moveAmount));
+          const [layer] = layers.splice(currentIndex, 1);
+          layers.splice(newIndex, 0, layer);
+          return layers;
+        });
+        setStartDragY(e.clientY);
+      }
+    } else {
+      // Move keyframes
+      setTimelineLayers(prevLayers =>
+        prevLayers.map(layer => ({
+          ...layer,
+          keyframes: layer.keyframes.map(keyframe => {
+            if (keyframe.id === draggingItem) {
+              if (dragType === "keyframe") {
+                const newStartTime = Math.max(
+                  0,
+                  Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * 0.1)
+                );
+                return { ...keyframe, startTime: newStartTime };
+              } else if (dragType === "duration") {
+                const newDuration = Math.max(
+                  5,
+                  Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * 0.1)
+                );
+                return { ...keyframe, duration: newDuration };
+              }
+            }
+            return keyframe;
+          }),
+        }))
+      );
+      setStartDragX(e.clientX);
+    }
   };
 
   const handleDragEnd = () => {
@@ -113,8 +156,67 @@ export const TimelineControl = ({
   };
 
   return (
-    <div className="bg-[#0f1116] p-4 select-none">
-      <div className="space-y-4">
+    <div className="bg-[#0f1116] p-4 select-none flex">
+      {/* Timeline layers list */}
+      <div className="w-48 border-r border-neutral-800 pr-4 space-y-2">
+        {timelineLayers.map(layer => (
+          <div
+            key={layer.id}
+            className="h-10 flex items-center justify-between group"
+            onMouseDown={e => handleDragStart(e, layer.id, "layer")}
+          >
+            <div className="flex items-center gap-2">
+              <DragHandleDots2Icon className="w-4 h-4 text-neutral-400" />
+              <span className="text-sm truncate">{layer.name}</span>
+            </div>
+            <div className="flex gap-1 opacity-0 group-hover:opacity-100">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => addKeyframe(layer.id, 'move')}
+              >
+                <Move className="w-3 h-3" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => addKeyframe(layer.id, 'scale')}
+              >
+                <Maximize2 className="w-3 h-3" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => addKeyframe(layer.id, 'rotate')}
+              >
+                <RotateCw className="w-3 h-3" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => addKeyframe(layer.id, 'opacity')}
+              >
+                <Ghost className="w-3 h-3" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => addKeyframe(layer.id, 'color')}
+              >
+                <Palette className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Timeline grid */}
+      <div className="flex-1">
         <div className="relative">
           <div className="absolute -top-6 left-0 right-0 flex justify-between text-xs text-neutral-400">
             {[...Array(11)].map((_, i) => (
@@ -122,7 +224,7 @@ export const TimelineControl = ({
             ))}
           </div>
           <div className="border-t border-b border-neutral-800">
-            <div className="relative h-[160px]">
+            <div className="relative" style={{ height: `${timelineLayers.length * 40}px` }}>
               {/* Time indicator */}
               <div
                 className="absolute top-0 bottom-0 w-px bg-blue-500 transition-all duration-100"
@@ -130,45 +232,54 @@ export const TimelineControl = ({
               />
 
               {/* Timeline tracks */}
-              {[...Array(4)].map((_, trackIndex) => (
+              {timelineLayers.map((layer, index) => (
                 <div
-                  key={trackIndex}
+                  key={layer.id}
                   className="h-10 border-b border-neutral-800 last:border-b-0"
-                />
-              ))}
-
-              {/* Timeline items */}
-              {items.map(item => (
-                <div
-                  key={item.id}
-                  className="absolute h-9 flex items-center group"
-                  style={{
-                    left: `${item.startTime}%`,
-                    width: `${item.duration}%`,
-                    top: `${item.track * 40}px`,
-                  }}
-                  onMouseDown={e => handleDragStart(e, item.id, "position")}
-                  onMouseMove={e => draggingItem && handleDragMove(e)}
-                  onMouseUp={handleDragEnd}
-                  onMouseLeave={handleDragEnd}
                 >
-                  <div className="bg-blue-500/20 border border-blue-500 rounded-md w-full h-full flex items-center group-hover:border-blue-400">
-                    <div className="px-2 flex items-center gap-2 min-w-0">
-                      <DragHandleDots2Icon className="w-4 h-4 text-neutral-400 flex-shrink-0" />
-                      <span className="text-xs truncate">{item.name}</span>
-                      <span className="text-xs text-neutral-400">
-                        {item.startTime.toFixed(1)}s - {(item.startTime + item.duration).toFixed(1)}s
-                      </span>
-                    </div>
-                    {/* Resize handle */}
+                  {/* Keyframes */}
+                  {layer.keyframes.map(keyframe => (
                     <div
-                      className="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
-                      onMouseDown={e => {
-                        e.stopPropagation();
-                        handleDragStart(e, item.id, "duration");
+                      key={keyframe.id}
+                      className="absolute h-8 mt-1 flex items-center group"
+                      style={{
+                        left: `${keyframe.startTime}%`,
+                        width: `${keyframe.duration}%`,
+                        top: `${index * 40}px`,
                       }}
-                    />
-                  </div>
+                      onMouseDown={e => handleDragStart(e, keyframe.id, "keyframe")}
+                      onMouseMove={e => draggingItem && handleDragMove(e)}
+                      onMouseUp={handleDragEnd}
+                      onMouseLeave={handleDragEnd}
+                    >
+                      <div 
+                        className={`
+                          bg-blue-500/20 border border-blue-500 rounded-md w-full h-full 
+                          flex items-center group-hover:border-blue-400
+                          ${draggingItem === keyframe.id ? 'border-blue-400' : ''}
+                        `}
+                      >
+                        <div className="px-2 flex items-center gap-2 min-w-0">
+                          {keyframe.animationType === 'move' && <Move className="w-3 h-3" />}
+                          {keyframe.animationType === 'scale' && <Maximize2 className="w-3 h-3" />}
+                          {keyframe.animationType === 'rotate' && <RotateCw className="w-3 h-3" />}
+                          {keyframe.animationType === 'opacity' && <Ghost className="w-3 h-3" />}
+                          {keyframe.animationType === 'color' && <Palette className="w-3 h-3" />}
+                          <span className="text-xs text-neutral-400">
+                            {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
+                          </span>
+                        </div>
+                        {/* Resize handle */}
+                        <div
+                          className="absolute right-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
+                          onMouseDown={e => {
+                            e.stopPropagation();
+                            handleDragStart(e, keyframe.id, "duration");
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
 
