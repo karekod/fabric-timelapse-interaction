@@ -1,4 +1,3 @@
-
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { 
@@ -17,22 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-interface TimelineLayer {
-  id: string;
-  elementId: string;
-  name: string;
-  keyframes: Keyframe[];
-  isVisible?: boolean;
-}
-
-interface Keyframe {
-  id: string;
-  startTime: number;
-  duration: number;
-  animationType: 'move' | 'scale' | 'rotate';
-  properties: Record<string, any>;
-}
+import { TimelineLayer, Keyframe } from "@/types/animation";
 
 interface TimelineControlProps {
   currentTime: number;

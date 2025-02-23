@@ -10,25 +10,9 @@ import {
   PlusCircle,
   Move,
   Maximize2,
-  RotateCw,
-  Ghost,
-  Palette
+  RotateCw
 } from "lucide-react";
-
-interface TimelineLayer {
-  id: string;
-  elementId: string;
-  name: string;
-  keyframes: Keyframe[];
-}
-
-interface Keyframe {
-  id: string;
-  startTime: number;
-  duration: number;
-  animationType: 'move' | 'scale' | 'color' | 'opacity' | 'rotate';
-  properties: Record<string, any>;
-}
+import { TimelineLayer, Keyframe } from "@/types/animation";
 
 interface ExtendedFabricObject extends FabricObject {
   customId?: string;
@@ -129,8 +113,6 @@ export const Canvas = () => {
                     <AnimationButton type="move" icon={Move} />
                     <AnimationButton type="scale" icon={Maximize2} />
                     <AnimationButton type="rotate" icon={RotateCw} />
-                    <AnimationButton type="opacity" icon={Ghost} />
-                    <AnimationButton type="color" icon={Palette} />
                   </div>
                   <div className="flex flex-col gap-2 bg-neutral-900/50 p-2 rounded-lg">
                     <div className="flex gap-2 items-center">
