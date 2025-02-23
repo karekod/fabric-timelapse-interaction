@@ -5,7 +5,15 @@ import { TimelineControl } from "./TimelineControl";
 import { AnimationPanel } from "./AnimationPanel";
 import { Sidebar } from "./Sidebar";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { 
+  PlusCircle,
+  Move,
+  Maximize2,
+  RotateCw,
+  Ghost,
+  Palette
+} from "lucide-react";
 
 interface TimelineLayer {
   id: string;
@@ -33,6 +41,9 @@ export const Canvas = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
+  const [selectedAnimation, setSelectedAnimation] = useState<Keyframe['animationType']>('move');
+  const [startTime, setStartTime] = useState("0");
+  const [duration, setDuration] = useState("20");
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -74,15 +85,35 @@ export const Canvas = () => {
   const addTimelineLayer = () => {
     if (!selectedObject || !selectedObject.customId) return;
 
+    const start = Math.min(100, Math.max(0, parseFloat(startTime) || 0));
+    const dur = Math.min(100 - start, Math.max(1, parseFloat(duration) || 20));
+
     const newLayer: TimelineLayer = {
       id: crypto.randomUUID(),
       elementId: selectedObject.customId,
       name: selectedObject.type || 'Element',
-      keyframes: [],
+      keyframes: [{
+        id: crypto.randomUUID(),
+        startTime: start,
+        duration: dur,
+        animationType: selectedAnimation,
+        properties: {},
+      }],
     };
 
     setTimelineLayers(prev => [...prev, newLayer]);
   };
+
+  const AnimationButton = ({ type, icon: Icon }: { type: Keyframe['animationType'], icon: any }) => (
+    <Button
+      size="icon"
+      variant={selectedAnimation === type ? "default" : "ghost"}
+      className="h-8 w-8"
+      onClick={() => setSelectedAnimation(type)}
+    >
+      <Icon className="w-4 h-4" />
+    </Button>
+  );
 
   return (
     <div className="h-screen bg-[#0f1116] text-white flex">
@@ -93,16 +124,42 @@ export const Canvas = () => {
             <div className="relative border border-neutral-800 rounded-lg overflow-hidden bg-[#171717] shadow-xl">
               <canvas ref={canvasRef} />
               {selectedObject && (
-                <div className="absolute top-4 right-4">
-                  <Button 
-                    onClick={addTimelineLayer}
-                    className="flex items-center gap-2"
-                    variant="secondary"
-                    size="sm"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    Add Timeline
-                  </Button>
+                <div className="absolute top-4 right-4 flex flex-col items-end gap-4">
+                  <div className="flex items-center gap-2 bg-neutral-900/50 p-2 rounded-lg">
+                    <AnimationButton type="move" icon={Move} />
+                    <AnimationButton type="scale" icon={Maximize2} />
+                    <AnimationButton type="rotate" icon={RotateCw} />
+                    <AnimationButton type="opacity" icon={Ghost} />
+                    <AnimationButton type="color" icon={Palette} />
+                  </div>
+                  <div className="flex flex-col gap-2 bg-neutral-900/50 p-2 rounded-lg">
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        type="number"
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
+                        className="w-20 h-8 text-sm"
+                        placeholder="Start"
+                      />
+                      <span className="text-xs text-neutral-400">to</span>
+                      <Input
+                        type="number"
+                        value={duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        className="w-20 h-8 text-sm"
+                        placeholder="Duration"
+                      />
+                    </div>
+                    <Button 
+                      onClick={addTimelineLayer}
+                      className="flex items-center gap-2"
+                      variant="secondary"
+                      size="sm"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      Add Timeline
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>
