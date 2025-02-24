@@ -2,9 +2,13 @@
 import { Canvas as FabricCanvas, Circle, Rect, IText } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
-  Play, Settings, Layout, ChevronRight 
+  Play, Settings, Layout, ChevronRight,
+  Move, Maximize2, RotateCw
 } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Keyframe } from "@/types/animation";
 
 interface SidebarProps {
   canvas: FabricCanvas | null;
@@ -23,6 +27,9 @@ type MenuSection =
 export const Sidebar = ({ canvas }: SidebarProps) => {
   const [activeSection, setActiveSection] = useState<MenuSection>("text");
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
+  const [selectedAnimation, setSelectedAnimation] = useState<Keyframe['animationType']>('move');
+  const [startTime, setStartTime] = useState("0");
+  const [duration, setDuration] = useState("20");
 
   const addShape = (type: "rectangle" | "circle") => {
     if (!canvas) return;
@@ -77,6 +84,21 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     canvas.renderAll();
   };
 
+  const addInitialText = () => {
+    if (!canvas) return;
+    const welcomeText = new IText("Welcome to Canvas Animation", {
+      left: canvas.width! / 2,
+      top: canvas.height! / 2,
+      originX: 'center',
+      originY: 'center',
+      fill: "#ffffff",
+      fontSize: 24,
+      fontWeight: "bold"
+    });
+    canvas.add(welcomeText);
+    canvas.renderAll();
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "text":
@@ -109,6 +131,80 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           </div>
         );
 
+      case "animations":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">ANIMATION TYPE</div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 mb-4">
+                <Button
+                  size="icon"
+                  variant={selectedAnimation === 'move' ? "default" : "ghost"}
+                  className="h-8 w-8"
+                  onClick={() => setSelectedAnimation('move')}
+                >
+                  <Move className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={selectedAnimation === 'scale' ? "default" : "ghost"}
+                  className="h-8 w-8"
+                  onClick={() => setSelectedAnimation('scale')}
+                >
+                  <Maximize2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  size="icon"
+                  variant={selectedAnimation === 'rotate' ? "default" : "ghost"}
+                  className="h-8 w-8"
+                  onClick={() => setSelectedAnimation('rotate')}
+                >
+                  <RotateCw className="w-4 h-4" />
+                </Button>
+              </div>
+              <div className="space-y-4">
+                <div className="text-xs text-neutral-500">ANIMATION TIME</div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="text-xs text-neutral-400">Start Time (s)</label>
+                    <Input
+                      type="number"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full h-8 text-sm text-black"
+                      placeholder="Start"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-neutral-400">Duration (s)</label>
+                    <Input
+                      type="number"
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="w-full h-8 text-sm text-black"
+                      placeholder="Duration"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4 mt-6">
+                <div className="text-xs text-neutral-500">PRESETS</div>
+                <div className="space-y-2">
+                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                    Fade In
+                  </button>
+                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                    Bounce
+                  </button>
+                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                    Slide In
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
       case "shapes":
         return (
           <div className="space-y-4">
@@ -129,22 +225,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <span>Circle</span>
               </button>
             </div>
-            {selectedShape && (
-              <div>
-                <div className="text-xs text-neutral-500 mb-4">ANIMATIONS</div>
-                <div className="space-y-2">
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
-                    <span>Fade In</span>
-                  </button>
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
-                    <span>Scale Up</span>
-                  </button>
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2">
-                    <span>Rotate</span>
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         );
 
@@ -186,6 +266,14 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             <Shapes className="w-5 h-5" />
           </button>
           <button
+            onClick={() => setActiveSection("animations")}
+            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+              activeSection === "animations" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
+            }`}
+          >
+            <Play className="w-5 h-5" />
+          </button>
+          <button
             onClick={() => setActiveSection("projects")}
             className={`w-10 h-10 flex items-center justify-center rounded-lg ${
               activeSection === "projects" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
@@ -200,14 +288,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             }`}
           >
             <Upload className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSection("animations")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "animations" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
-          >
-            <Play className="w-5 h-5" />
           </button>
           <button
             onClick={() => setActiveSection("settings")}

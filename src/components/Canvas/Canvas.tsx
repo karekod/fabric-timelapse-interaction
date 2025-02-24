@@ -1,17 +1,11 @@
 
 import { useEffect, useRef, useState } from "react";
-import { Canvas as FabricCanvas, Object as FabricObject } from "fabric";
+import { Canvas as FabricCanvas, Object as FabricObject, IText } from "fabric";
 import { TimelineControl } from "./TimelineControl";
 import { AnimationPanel } from "./AnimationPanel";
 import { Sidebar } from "./Sidebar";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { 
-  PlusCircle,
-  Move,
-  Maximize2,
-  RotateCw
-} from "lucide-react";
 import { TimelineLayer, Keyframe } from "@/types/animation";
 
 interface ExtendedFabricObject extends FabricObject {
@@ -25,9 +19,6 @@ export const Canvas = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
-  const [selectedAnimation, setSelectedAnimation] = useState<Keyframe['animationType']>('move');
-  const [startTime, setStartTime] = useState("0");
-  const [duration, setDuration] = useState("20");
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -37,6 +28,18 @@ export const Canvas = () => {
       height: window.innerHeight * 0.6,
       backgroundColor: "#0f1116",
     });
+
+    // Add welcome text
+    const welcomeText = new IText("Welcome to Canvas Animation", {
+      left: fabricCanvas.width! / 2,
+      top: fabricCanvas.height! / 2,
+      originX: 'center',
+      originY: 'center',
+      fill: "#ffffff",
+      fontSize: 24,
+      fontWeight: "bold"
+    });
+    fabricCanvas.add(welcomeText);
 
     fabricCanvas.on("selection:created", (e) => {
       const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
@@ -66,28 +69,6 @@ export const Canvas = () => {
     };
   }, []);
 
-  const addTimelineLayer = () => {
-    if (!selectedObject || !selectedObject.customId) return;
-
-    const start = Math.min(100, Math.max(0, parseFloat(startTime) || 0));
-    const dur = Math.min(100 - start, Math.max(1, parseFloat(duration) || 20));
-
-    const newLayer: TimelineLayer = {
-      id: crypto.randomUUID(),
-      elementId: selectedObject.customId,
-      name: selectedObject.type || 'Element',
-      keyframes: [{
-        id: crypto.randomUUID(),
-        startTime: start,
-        duration: dur,
-        animationType: selectedAnimation,
-        properties: {},
-      }],
-    };
-
-    setTimelineLayers(prev => [...prev, newLayer]);
-  };
-
   return (
     <div className="h-screen bg-[#0f1116] text-white flex">
       <div className="flex flex-col flex-1">
@@ -96,64 +77,6 @@ export const Canvas = () => {
           <div className="flex-1 p-8 flex justify-center items-center">
             <div className="relative border border-neutral-800 rounded-lg overflow-hidden bg-[#171717] shadow-xl">
               <canvas ref={canvasRef} />
-              {selectedObject && (
-                <div className="absolute top-4 right-4 flex flex-col items-end gap-4">
-                  <div className="flex flex-col gap-2 bg-neutral-900/50 p-2 rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="icon"
-                        variant={selectedAnimation === 'move' ? "default" : "ghost"}
-                        className="h-8 w-8"
-                        onClick={() => setSelectedAnimation('move')}
-                      >
-                        <Move className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant={selectedAnimation === 'scale' ? "default" : "ghost"}
-                        className="h-8 w-8"
-                        onClick={() => setSelectedAnimation('scale')}
-                      >
-                        <Maximize2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant={selectedAnimation === 'rotate' ? "default" : "ghost"}
-                        className="h-8 w-8"
-                        onClick={() => setSelectedAnimation('rotate')}
-                      >
-                        <RotateCw className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="number"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="w-20 h-8 text-sm"
-                        placeholder="Start"
-                      />
-                      <span className="text-xs text-neutral-400">to</span>
-                      <Input
-                        type="number"
-                        value={duration}
-                        onChange={(e) => setDuration(e.target.value)}
-                        className="w-20 h-8 text-sm"
-                        placeholder="Duration"
-                      />
-                    </div>
-                    <Button 
-                      onClick={addTimelineLayer}
-                      className="flex items-center gap-2"
-                      variant="secondary"
-                      size="sm"
-                    >
-                      <PlusCircle className="w-4 h-4" />
-                      Add Timeline
-                    </Button>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
