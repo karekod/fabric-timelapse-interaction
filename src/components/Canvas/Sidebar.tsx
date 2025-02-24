@@ -1,4 +1,3 @@
-
 import { Canvas as FabricCanvas, Circle, Rect, IText } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
@@ -134,72 +133,43 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       case "animations":
         return (
           <div className="space-y-4">
-            <div className="text-xs text-neutral-500 mb-4">ANIMATION TYPE</div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 mb-4">
-                <Button
-                  size="icon"
-                  variant={selectedAnimation === 'move' ? "default" : "ghost"}
-                  className="h-8 w-8"
-                  onClick={() => setSelectedAnimation('move')}
-                >
-                  <Move className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={selectedAnimation === 'scale' ? "default" : "ghost"}
-                  className="h-8 w-8"
-                  onClick={() => setSelectedAnimation('scale')}
-                >
-                  <Maximize2 className="w-4 h-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant={selectedAnimation === 'rotate' ? "default" : "ghost"}
-                  className="h-8 w-8"
-                  onClick={() => setSelectedAnimation('rotate')}
-                >
-                  <RotateCw className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="space-y-4">
-                <div className="text-xs text-neutral-500">ANIMATION TIME</div>
-                <div className="space-y-2">
-                  <div>
-                    <label className="text-xs text-neutral-400">Start Time (s)</label>
-                    <Input
-                      type="number"
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full h-8 text-sm text-black"
-                      placeholder="Start"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs text-neutral-400">Duration (s)</label>
-                    <Input
-                      type="number"
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      className="w-full h-8 text-sm text-black"
-                      placeholder="Duration"
-                    />
-                  </div>
+            <div className="space-y-4">
+              <div className="text-xs text-neutral-500">ANIMATION TIME</div>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-xs text-neutral-400">Start Time (s)</label>
+                  <Input
+                    type="number"
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    className="w-full h-8 text-sm text-black"
+                    placeholder="Start"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-neutral-400">Duration (s)</label>
+                  <Input
+                    type="number"
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    className="w-full h-8 text-sm text-black"
+                    placeholder="Duration"
+                  />
                 </div>
               </div>
-              <div className="space-y-4 mt-6">
-                <div className="text-xs text-neutral-500">PRESETS</div>
-                <div className="space-y-2">
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                    Fade In
-                  </button>
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                    Bounce
-                  </button>
-                  <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
-                    Slide In
-                  </button>
-                </div>
+            </div>
+            <div className="space-y-4">
+              <div className="text-xs text-neutral-500">PRESETS</div>
+              <div className="space-y-2">
+                <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                  Fade In
+                </button>
+                <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                  Bounce
+                </button>
+                <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
+                  Slide In
+                </button>
               </div>
             </div>
           </div>

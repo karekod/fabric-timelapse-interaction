@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Canvas as FabricCanvas, Object as FabricObject, IText } from "fabric";
 import { TimelineControl } from "./TimelineControl";
@@ -19,6 +18,25 @@ export const Canvas = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
+
+  const handleAddTimeline = () => {
+    if (!selectedObject || !selectedObject.customId) return;
+
+    const newLayer: TimelineLayer = {
+      id: crypto.randomUUID(),
+      elementId: selectedObject.customId,
+      name: selectedObject.type || 'Element',
+      keyframes: [{
+        id: crypto.randomUUID(),
+        startTime: 0,
+        duration: 20,
+        animationType: 'move',
+        properties: {},
+      }],
+    };
+
+    setTimelineLayers(prev => [...prev, newLayer]);
+  };
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -85,6 +103,7 @@ export const Canvas = () => {
             isPlaying={isPlaying} 
             setIsPlaying={setIsPlaying}
             currentTime={currentTime}
+            onAddTimeline={handleAddTimeline}
           />
           <TimelineControl
             currentTime={currentTime}
