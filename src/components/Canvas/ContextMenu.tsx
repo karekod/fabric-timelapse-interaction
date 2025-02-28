@@ -43,11 +43,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
   const handleBringForward = () => {
     if (!canvas || !selectedObject) return;
     
-    const currentIndex = canvas.getObjects().indexOf(selectedObject);
+    const objects = canvas.getObjects();
+    const currentIndex = objects.indexOf(selectedObject);
     const newIndex = currentIndex + 1;
     
-    if (newIndex < canvas.getObjects().length) {
-      canvas.moveTo(selectedObject, newIndex);
+    if (newIndex < objects.length) {
+      // In Fabric.js v6, we need to rearrange the objects array
+      objects.splice(currentIndex, 1);
+      objects.splice(newIndex, 0, selectedObject);
       canvas.renderAll();
     }
   };
@@ -55,11 +58,14 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
   const handleSendBackward = () => {
     if (!canvas || !selectedObject) return;
     
-    const currentIndex = canvas.getObjects().indexOf(selectedObject);
+    const objects = canvas.getObjects();
+    const currentIndex = objects.indexOf(selectedObject);
     const newIndex = Math.max(0, currentIndex - 1);
     
     if (currentIndex > 0) {
-      canvas.moveTo(selectedObject, newIndex);
+      // In Fabric.js v6, we need to rearrange the objects array
+      objects.splice(currentIndex, 1);
+      objects.splice(newIndex, 0, selectedObject);
       canvas.renderAll();
     }
   };
