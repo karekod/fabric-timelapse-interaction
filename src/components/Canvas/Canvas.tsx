@@ -1,10 +1,9 @@
-
 import { useEffect, useRef, useState } from "react";
 import { Canvas as FabricCanvas, Object as FabricObject, IText } from "fabric";
 import { TimelineControl } from "./TimelineControl";
 import { AnimationPanel } from "./AnimationPanel";
 import { Sidebar } from "./Sidebar";
-import { ContextMenu } from "./ContextMenu";
+import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TimelineLayer, Keyframe } from "@/types/animation";
 
@@ -68,14 +67,6 @@ export const Canvas = () => {
       setSelectedObject(selectedObj);
     });
 
-    fabricCanvas.on("selection:updated", (e) => {
-      const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
-      if (!selectedObj.customId) {
-        selectedObj.customId = crypto.randomUUID();
-      }
-      setSelectedObject(selectedObj);
-    });
-
     fabricCanvas.on("selection:cleared", () => {
       setSelectedObject(null);
     });
@@ -103,7 +94,6 @@ export const Canvas = () => {
           <Sidebar canvas={canvas} />
           <div className="flex-1 p-8 flex justify-center items-center">
             <div className="relative border border-neutral-800 rounded-lg overflow-hidden bg-[#171717] shadow-xl">
-              {selectedObject && canvas && <ContextMenu selectedObject={selectedObject} canvas={canvas} />}
               <canvas ref={canvasRef} />
             </div>
           </div>
