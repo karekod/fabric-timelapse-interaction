@@ -5,7 +5,6 @@ import { TimelineControl } from "./TimelineControl";
 import { AnimationPanel } from "./AnimationPanel";
 import { Sidebar } from "./Sidebar";
 import { ContextMenu } from "./ContextMenu";
-import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TimelineLayer, Keyframe } from "@/types/animation";
 
@@ -104,7 +103,7 @@ export const Canvas = () => {
           <Sidebar canvas={canvas} />
           <div className="flex-1 p-8 flex justify-center items-center">
             <div className="relative border border-neutral-800 rounded-lg overflow-hidden bg-[#171717] shadow-xl">
-              {selectedObject && <ContextMenu selectedObject={selectedObject} canvas={canvas} />}
+              {selectedObject && canvas && <ContextMenu selectedObject={selectedObject} canvas={canvas} />}
               <canvas ref={canvasRef} />
             </div>
           </div>
