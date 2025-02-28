@@ -41,12 +41,18 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
   };
   
   const handleBringForward = () => {
-    canvas.bringForward(selectedObject);
+    // Using moveObjectUp instead of bringForward
+    canvas.viewportTransform && selectedObject.moveTo(
+      (selectedObject.group?.objects?.indexOf(selectedObject) || canvas.getObjects().indexOf(selectedObject)) + 1
+    );
     canvas.renderAll();
   };
   
   const handleSendBackward = () => {
-    canvas.sendBackward(selectedObject);
+    // Using moveObjectDown instead of sendBackward
+    canvas.viewportTransform && selectedObject.moveTo(
+      Math.max(0, (selectedObject.group?.objects?.indexOf(selectedObject) || canvas.getObjects().indexOf(selectedObject)) - 1)
+    );
     canvas.renderAll();
   };
   
