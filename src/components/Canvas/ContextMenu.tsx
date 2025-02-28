@@ -41,19 +41,27 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
   };
   
   const handleBringForward = () => {
-    // Using moveObjectUp instead of bringForward
-    canvas.viewportTransform && selectedObject.moveTo(
-      (selectedObject.group?.objects?.indexOf(selectedObject) || canvas.getObjects().indexOf(selectedObject)) + 1
-    );
-    canvas.renderAll();
+    if (!canvas || !selectedObject) return;
+    
+    const currentIndex = canvas.getObjects().indexOf(selectedObject);
+    const newIndex = currentIndex + 1;
+    
+    if (newIndex < canvas.getObjects().length) {
+      canvas.moveTo(selectedObject, newIndex);
+      canvas.renderAll();
+    }
   };
   
   const handleSendBackward = () => {
-    // Using moveObjectDown instead of sendBackward
-    canvas.viewportTransform && selectedObject.moveTo(
-      Math.max(0, (selectedObject.group?.objects?.indexOf(selectedObject) || canvas.getObjects().indexOf(selectedObject)) - 1)
-    );
-    canvas.renderAll();
+    if (!canvas || !selectedObject) return;
+    
+    const currentIndex = canvas.getObjects().indexOf(selectedObject);
+    const newIndex = Math.max(0, currentIndex - 1);
+    
+    if (currentIndex > 0) {
+      canvas.moveTo(selectedObject, newIndex);
+      canvas.renderAll();
+    }
   };
   
   // For text objects
