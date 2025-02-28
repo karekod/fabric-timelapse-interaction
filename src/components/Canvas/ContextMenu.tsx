@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Object as FabricObject, IText, Image as FabricImage } from 'fabric';
+import { Object as FabricObject, IText, Image as FabricImage, Canvas } from 'fabric';
 import { 
   ChevronDown, 
   Type, 
@@ -23,7 +23,7 @@ import { Input } from '@/components/ui/input';
 
 interface ContextMenuProps {
   selectedObject: FabricObject | null;
-  canvas: fabric.Canvas | null;
+  canvas: Canvas | null;
 }
 
 export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas }) => {
