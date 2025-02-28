@@ -6,6 +6,7 @@ import { TextControls } from './controls/TextControls';
 import { ImageControls } from './controls/ImageControls';
 import { ShapeControls } from './controls/ShapeControls';
 import { CommonControls } from './controls/CommonControls';
+import { TypeHeader } from './controls/TypeHeader';
 
 interface ContextMenuProps {
   selectedObject: FabricObject | null;
@@ -26,10 +27,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
       <div className="flex items-center">
         {isText && (
           <>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Type className="w-4 h-4" />
-              <span>Text</span>
-            </div>
+            <TypeHeader icon={Type} title="Text" />
             <div className="w-px h-6 bg-neutral-700 mx-3"></div>
             <TextControls textObject={selectedObject as IText} canvas={canvas} />
           </>
@@ -37,10 +35,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
         
         {isImage && (
           <>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Image className="w-4 h-4" />
-              <span>Image</span>
-            </div>
+            <TypeHeader icon={Image} title="Image" />
             <div className="w-px h-6 bg-neutral-700 mx-3"></div>
             <ImageControls selectedObject={selectedObject} canvas={canvas} />
           </>
@@ -48,10 +43,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
         
         {isShape && (
           <>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Square className="w-4 h-4" />
-              <span>Shape</span>
-            </div>
+            <TypeHeader icon={Square} title="Shape" />
             <div className="w-px h-6 bg-neutral-700 mx-3"></div>
             <ShapeControls selectedObject={selectedObject} canvas={canvas} />
           </>
