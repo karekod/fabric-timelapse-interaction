@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { IText, Canvas } from 'fabric';
-import { Type, Palette, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { Type, AlignLeft, AlignCenter, AlignRight } from 'lucide-react';
+import { ColorPicker } from './ColorPicker';
 
 interface TextControlsProps {
   textObject: IText;
@@ -73,18 +74,14 @@ export const TextControls: React.FC<TextControlsProps> = ({ textObject, canvas }
         </button>
       </div>
       
-      <div className="flex items-center gap-2">
-        <Palette className="w-4 h-4" />
-        <input 
-          type="color" 
-          className="w-6 h-6 bg-transparent border-0 p-0"
-          value={textObject.get('fill') as string || '#ffffff'}
-          onChange={(e) => {
-            textObject.set('fill', e.target.value);
-            canvas.renderAll();
-          }}
-        />
-      </div>
+      <ColorPicker 
+        color={textObject.get('fill') as string || '#ffffff'}
+        onChange={(color) => {
+          textObject.set('fill', color);
+          canvas.renderAll();
+        }}
+        label="Text Color"
+      />
     </div>
   );
 };

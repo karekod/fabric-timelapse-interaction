@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Object as FabricObject, Canvas } from 'fabric';
-import { Palette, RotateCw, Square } from 'lucide-react';
+import { RotateCw, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ColorPicker } from './ColorPicker';
 
 interface ShapeControlsProps {
   selectedObject: FabricObject;
@@ -25,18 +26,14 @@ export const ShapeControls: React.FC<ShapeControlsProps> = ({ selectedObject, ca
         <span>Rotate</span>
       </Button>
       
-      <div className="flex items-center gap-2">
-        <Palette className="w-4 h-4" />
-        <input 
-          type="color" 
-          className="w-6 h-6 bg-transparent border-0 p-0"
-          value={selectedObject.get('fill') as string || '#ffffff'}
-          onChange={(e) => {
-            selectedObject.set('fill', e.target.value);
-            canvas.renderAll();
-          }}
-        />
-      </div>
+      <ColorPicker 
+        color={selectedObject.get('fill') as string || '#ffffff'}
+        onChange={(color) => {
+          selectedObject.set('fill', color);
+          canvas.renderAll();
+        }}
+        label="Fill Color"
+      />
       
       <Button 
         variant="outline" 
