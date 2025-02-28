@@ -12,8 +12,8 @@ import {
   FlipHorizontal,
   FlipVertical,
   Trash2,
-  BringForward,
-  SendBackward,
+  ArrowUp,
+  ArrowDown,
   Image,
   Square
 } from 'lucide-react';
@@ -239,7 +239,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
         className="h-8" 
         onClick={handleBringForward}
       >
-        <BringForward className="w-4 h-4" />
+        <ArrowUp className="w-4 h-4" />
       </Button>
       
       <Button 
@@ -248,7 +248,7 @@ export const ContextMenu: React.FC<ContextMenuProps> = ({ selectedObject, canvas
         className="h-8" 
         onClick={handleSendBackward}
       >
-        <SendBackward className="w-4 h-4" />
+        <ArrowDown className="w-4 h-4" />
       </Button>
       
       <Button 

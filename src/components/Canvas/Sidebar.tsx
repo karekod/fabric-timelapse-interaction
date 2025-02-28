@@ -97,13 +97,17 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     reader.onload = (e) => {
       if (!e.target || typeof e.target.result !== 'string') return;
       
-      FabricImage.fromURL(e.target.result, (img) => {
-        img.scaleToWidth(200);
-        canvas.add(img);
-        canvas.setActiveObject(img);
+      const imgElement = document.createElement('img');
+      imgElement.src = e.target.result;
+      
+      imgElement.onload = () => {
+        const fabricImg = new FabricImage(imgElement);
+        fabricImg.scaleToWidth(200);
+        canvas.add(fabricImg);
+        canvas.setActiveObject(fabricImg);
         canvas.renderAll();
         toast.success("Image uploaded successfully!");
-      });
+      };
     };
     
     reader.readAsDataURL(file);
@@ -112,13 +116,18 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const loadExampleImage = (url: string) => {
     if (!canvas) return;
     
-    FabricImage.fromURL(url, (img) => {
-      img.scaleToWidth(200);
-      canvas.add(img);
-      canvas.setActiveObject(img);
+    const imgElement = document.createElement('img');
+    imgElement.crossOrigin = "anonymous";
+    imgElement.src = url;
+    
+    imgElement.onload = () => {
+      const fabricImg = new FabricImage(imgElement);
+      fabricImg.scaleToWidth(200);
+      canvas.add(fabricImg);
+      canvas.setActiveObject(fabricImg);
       canvas.renderAll();
       toast.success("Example image added!");
-    });
+    };
   };
 
   const verifyGeminiApiKey = () => {
@@ -417,13 +426,17 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                   reader.onload = (e) => {
                     if (!e.target || typeof e.target.result !== 'string') return;
                     
-                    FabricImage.fromURL(e.target.result, (img) => {
-                      img.scaleToWidth(200);
-                      canvas.add(img);
-                      canvas.setActiveObject(img);
+                    const imgElement = document.createElement('img');
+                    imgElement.src = e.target.result;
+                    
+                    imgElement.onload = () => {
+                      const fabricImg = new FabricImage(imgElement);
+                      fabricImg.scaleToWidth(200);
+                      canvas.add(fabricImg);
+                      canvas.setActiveObject(fabricImg);
                       canvas.renderAll();
                       toast.success("Image uploaded successfully!");
-                    });
+                    };
                   };
                   
                   reader.readAsDataURL(file);
@@ -663,4 +676,3 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     </div>
   );
 };
-
