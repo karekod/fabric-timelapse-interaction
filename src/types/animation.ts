@@ -14,3 +14,9 @@ export interface Keyframe {
   animationType: 'move' | 'scale' | 'rotate';
   properties: Record<string, any>;
 }
+
+declare module "fabric" {
+  interface Object {
+    customId?: string;
+  }
+}

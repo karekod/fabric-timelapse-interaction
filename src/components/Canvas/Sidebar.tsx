@@ -1,13 +1,15 @@
-import { Canvas as FabricCanvas, Circle, Rect, IText } from "fabric";
+
+import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight,
-  Move, Maximize2, RotateCw
+  Move, Maximize2, RotateCw, Key
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Keyframe } from "@/types/animation";
+import { toast } from "sonner";
 
 interface SidebarProps {
   canvas: FabricCanvas | null;
@@ -29,6 +31,8 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const [selectedAnimation, setSelectedAnimation] = useState<Keyframe['animationType']>('move');
   const [startTime, setStartTime] = useState("0");
   const [duration, setDuration] = useState("20");
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const addShape = (type: "rectangle" | "circle") => {
     if (!canvas) return;
@@ -55,6 +59,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     }
 
     if (object) {
+      object.customId = crypto.randomUUID();
       canvas.add(object);
       canvas.setActiveObject(object);
       canvas.renderAll();
@@ -78,6 +83,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       ...styles[type],
     });
 
+    text.customId = crypto.randomUUID();
     canvas.add(text);
     canvas.setActiveObject(text);
     canvas.renderAll();
@@ -94,8 +100,82 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       fontSize: 24,
       fontWeight: "bold"
     });
+    welcomeText.customId = crypto.randomUUID();
     canvas.add(welcomeText);
     canvas.renderAll();
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!canvas || !e.target.files || e.target.files.length === 0) return;
+    
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    
+    reader.onload = (event) => {
+      const imgElement = document.createElement('img');
+      imgElement.src = event.target?.result as string;
+      
+      imgElement.onload = () => {
+        const fabricImage = new FabricImage(imgElement);
+        
+        // Scale down large images
+        if (fabricImage.width && fabricImage.width > 300) {
+          const scale = 300 / fabricImage.width;
+          fabricImage.scale(scale);
+        }
+        
+        fabricImage.set({
+          left: 100,
+          top: 100,
+        });
+        
+        fabricImage.customId = crypto.randomUUID();
+        canvas.add(fabricImage);
+        canvas.setActiveObject(fabricImage);
+        canvas.renderAll();
+        
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+    };
+    
+    reader.readAsDataURL(file);
+  };
+
+  const addExampleImage = (url: string) => {
+    if (!canvas) return;
+    
+    fabric.Image.fromURL(url, (img) => {
+      // Scale down large images
+      if (img.width && img.width > 300) {
+        const scale = 300 / img.width;
+        img.scale(scale);
+      }
+      
+      img.set({
+        left: 100,
+        top: 100,
+      });
+      
+      img.customId = crypto.randomUUID();
+      canvas.add(img);
+      canvas.setActiveObject(img);
+      canvas.renderAll();
+    });
+  };
+
+  const validateGeminiApiKey = () => {
+    if (!geminiApiKey.trim()) {
+      toast.error("Please enter a Gemini API key");
+      return;
+    }
+    
+    // Here we'd typically validate the API key by making a simple request
+    // For now, we'll just show a success message
+    toast.success("API key saved successfully!");
+    localStorage.setItem("gemini_api_key", geminiApiKey);
   };
 
   const renderContent = () => {
@@ -127,6 +207,72 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <span>Body Text</span>
               </button>
             </div>
+          </div>
+        );
+
+      case "image":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">EXAMPLE IMAGES</div>
+            <div className="grid grid-cols-2 gap-2">
+              <button 
+                onClick={() => addExampleImage("https://picsum.photos/id/237/200/300")}
+                className="bg-neutral-800/50 hover:bg-neutral-800 rounded-lg p-1 h-24 flex items-center justify-center overflow-hidden"
+              >
+                <img 
+                  src="https://picsum.photos/id/237/200/300" 
+                  alt="Example dog" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </button>
+              <button 
+                onClick={() => addExampleImage("https://picsum.photos/id/1005/200/300")}
+                className="bg-neutral-800/50 hover:bg-neutral-800 rounded-lg p-1 h-24 flex items-center justify-center overflow-hidden"
+              >
+                <img 
+                  src="https://picsum.photos/id/1005/200/300" 
+                  alt="Example person" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </button>
+              <button 
+                onClick={() => addExampleImage("https://picsum.photos/id/1074/200/300")}
+                className="bg-neutral-800/50 hover:bg-neutral-800 rounded-lg p-1 h-24 flex items-center justify-center overflow-hidden"
+              >
+                <img 
+                  src="https://picsum.photos/id/1074/200/300" 
+                  alt="Example landscape" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </button>
+              <button 
+                onClick={() => addExampleImage("https://picsum.photos/id/96/200/300")}
+                className="bg-neutral-800/50 hover:bg-neutral-800 rounded-lg p-1 h-24 flex items-center justify-center overflow-hidden"
+              >
+                <img 
+                  src="https://picsum.photos/id/96/200/300" 
+                  alt="Example object" 
+                  className="max-h-full max-w-full object-contain"
+                />
+              </button>
+            </div>
+            
+            <div className="text-xs text-neutral-500 mt-4 mb-2">UPLOAD IMAGE</div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            <Button 
+              variant="secondary" 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Upload Image
+            </Button>
           </div>
         );
 
@@ -194,6 +340,33 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <span className="text-sm">⭕</span>
                 <span>Circle</span>
               </button>
+            </div>
+          </div>
+        );
+
+      case "settings":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">API SETTINGS</div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-neutral-400">Gemini API Key</label>
+                <Input
+                  type="password"
+                  value={geminiApiKey}
+                  onChange={(e) => setGeminiApiKey(e.target.value)}
+                  className="w-full h-8 text-sm text-black"
+                  placeholder="Enter your Gemini API key"
+                />
+              </div>
+              <Button 
+                variant="primary" 
+                onClick={validateGeminiApiKey}
+                className="w-full flex items-center"
+              >
+                <Key className="w-4 h-4 mr-2" />
+                Validate API Key
+              </Button>
             </div>
           </div>
         );

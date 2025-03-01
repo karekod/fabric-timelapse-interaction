@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from "react";
 import { Canvas as FabricCanvas, Object as FabricObject, IText } from "fabric";
 import { TimelineControl } from "./TimelineControl";
@@ -21,6 +22,10 @@ export const Canvas = () => {
 
   const handleAddTimeline = () => {
     if (!selectedObject || !selectedObject.customId) return;
+
+    // Check if this object already has a timeline
+    const existingLayer = timelineLayers.find(layer => layer.elementId === selectedObject.customId);
+    if (existingLayer) return;
 
     const newLayer: TimelineLayer = {
       id: crypto.randomUUID(),
@@ -57,9 +62,18 @@ export const Canvas = () => {
       fontSize: 24,
       fontWeight: "bold"
     });
+    welcomeText.customId = crypto.randomUUID();
     fabricCanvas.add(welcomeText);
 
     fabricCanvas.on("selection:created", (e) => {
+      const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
+      if (!selectedObj.customId) {
+        selectedObj.customId = crypto.randomUUID();
+      }
+      setSelectedObject(selectedObj);
+    });
+
+    fabricCanvas.on("selection:updated", (e) => {
       const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
       if (!selectedObj.customId) {
         selectedObj.customId = crypto.randomUUID();
@@ -87,6 +101,24 @@ export const Canvas = () => {
     };
   }, []);
 
+  // Apply visibility changes when timelineLayers change
+  useEffect(() => {
+    if (!canvas) return;
+    
+    const objects = canvas.getObjects();
+    
+    timelineLayers.forEach(layer => {
+      if (layer.isVisible === false) {
+        const targetObject = objects.find((obj: any) => obj.customId === layer.elementId);
+        if (targetObject) {
+          targetObject.visible = false;
+        }
+      }
+    });
+    
+    canvas.renderAll();
+  }, [timelineLayers, canvas]);
+
   return (
     <div className="h-screen bg-[#0f1116] text-white flex">
       <div className="flex flex-col flex-1">
@@ -111,6 +143,7 @@ export const Canvas = () => {
             isPlaying={isPlaying}
             timelineLayers={timelineLayers}
             setTimelineLayers={setTimelineLayers}
+            canvas={canvas}
           />
         </div>
       </div>

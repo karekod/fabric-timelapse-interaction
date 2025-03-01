@@ -1,8 +1,10 @@
+
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { 
   GripVertical,
   EyeOff,
+  Eye,
   Trash2,
   Copy
 } from "lucide-react";
@@ -15,6 +17,7 @@ interface TimelineControlProps {
   isPlaying: boolean;
   timelineLayers: TimelineLayer[];
   setTimelineLayers: (layers: TimelineLayer[]) => void;
+  canvas: any;
 }
 
 export const TimelineControl = ({
@@ -23,9 +26,10 @@ export const TimelineControl = ({
   isPlaying,
   timelineLayers,
   setTimelineLayers,
+  canvas
 }: TimelineControlProps) => {
   const [draggingItem, setDraggingItem] = useState<string | null>(null);
-  const [dragType, setDragType] = useState<"layer" | "keyframe" | "duration" | null>(null);
+  const [dragType, setDragType] = useState<"layer" | "keyframe" | "duration" | "startTime" | null>(null);
   const [startDragX, setStartDragX] = useState(0);
   const [startDragY, setStartDragY] = useState(0);
 
@@ -51,9 +55,21 @@ export const TimelineControl = ({
   }, [isPlaying, currentTime, setCurrentTime]);
 
   const toggleLayerVisibility = (layerId: string) => {
-    setTimelineLayers(timelineLayers.map(layer => 
-      layer.id === layerId ? { ...layer, isVisible: !layer.isVisible } : layer
-    ));
+    setTimelineLayers(timelineLayers.map(layer => {
+      const isLayerVisible = !layer.isVisible;
+      
+      // Update canvas object visibility
+      if (canvas) {
+        const objects = canvas.getObjects();
+        const targetObject = objects.find((obj: any) => obj.customId === layer.elementId);
+        if (targetObject) {
+          targetObject.visible = isLayerVisible;
+          canvas.renderAll();
+        }
+      }
+      
+      return layer.id === layerId ? { ...layer, isVisible: isLayerVisible } : layer;
+    }));
   };
 
   const deleteLayer = (layerId: string) => {
@@ -62,11 +78,33 @@ export const TimelineControl = ({
 
   const duplicateLayer = (layerId: string) => {
     const layerToDuplicate = timelineLayers.find(layer => layer.id === layerId);
-    if (!layerToDuplicate) return;
+    if (!layerToDuplicate || !canvas) return;
 
+    // Create new layer ID and element ID
+    const newLayerId = crypto.randomUUID();
+    const newElementId = crypto.randomUUID();
+
+    // Clone the object in canvas
+    const objects = canvas.getObjects();
+    const sourceObject = objects.find((obj: any) => obj.customId === layerToDuplicate.elementId);
+    
+    if (sourceObject) {
+      sourceObject.clone((cloned: any) => {
+        cloned.customId = newElementId;
+        cloned.set({
+          left: sourceObject.left + 20,
+          top: sourceObject.top + 20,
+        });
+        canvas.add(cloned);
+        canvas.renderAll();
+      });
+    }
+
+    // Create the new timeline layer
     const newLayer: TimelineLayer = {
       ...layerToDuplicate,
-      id: crypto.randomUUID(),
+      id: newLayerId,
+      elementId: newElementId,
       name: `${layerToDuplicate.name} (copy)`,
       keyframes: layerToDuplicate.keyframes.map(keyframe => ({
         ...keyframe,
@@ -91,7 +129,7 @@ export const TimelineControl = ({
   const handleDragStart = (
     e: React.MouseEvent,
     itemId: string,
-    type: "layer" | "keyframe" | "duration"
+    type: "layer" | "keyframe" | "duration" | "startTime"
   ) => {
     e.stopPropagation();
     setDraggingItem(itemId);
@@ -137,6 +175,16 @@ export const TimelineControl = ({
                 Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * resizeSpeed)
               );
               return { ...keyframe, duration: newDuration };
+            } else if (dragType === "startTime") {
+              const resizeSpeed = 0.3;
+              const maxReduction = Math.min(keyframe.startTime, deltaX * resizeSpeed);
+              const newStartTime = Math.max(0, keyframe.startTime - maxReduction);
+              const newDuration = keyframe.duration + maxReduction;
+              return { 
+                ...keyframe, 
+                startTime: newStartTime,
+                duration: newDuration
+              };
             }
           }
           return keyframe;
@@ -173,7 +221,11 @@ export const TimelineControl = ({
                 className="h-6 w-6"
                 onClick={() => toggleLayerVisibility(layer.id)}
               >
-                <EyeOff className="w-3 h-3" />
+                {layer.isVisible === false ? (
+                  <EyeOff className="w-3 h-3" />
+                ) : (
+                  <Eye className="w-3 h-3" />
+                )}
               </Button>
               <Button
                 size="icon"
@@ -213,7 +265,7 @@ export const TimelineControl = ({
               {timelineLayers.map((layer, index) => (
                 <div
                   key={layer.id}
-                  className="h-10 border-b border-neutral-800 last:border-b-0"
+                  className={`h-10 border-b border-neutral-800 last:border-b-0 ${layer.isVisible === false ? 'opacity-50' : ''}`}
                 >
                   {layer.keyframes.map(keyframe => (
                     <div
@@ -234,10 +286,17 @@ export const TimelineControl = ({
                           bg-black border border-blue-500 rounded-md w-full h-full 
                           flex items-center group-hover:border-blue-400
                           ${draggingItem === keyframe.id ? 'border-blue-400' : ''}
-                          ${!layer.isVisible ? 'opacity-50' : ''}
+                          ${layer.isVisible === false ? 'opacity-50' : ''}
                         `}
                       >
-                        <div className="px-2 min-w-0">
+                        <div 
+                          className="absolute left-0 w-2 h-full cursor-ew-resize hover:bg-blue-400/50"
+                          onMouseDown={e => {
+                            e.stopPropagation();
+                            handleDragStart(e, keyframe.id, "startTime");
+                          }}
+                        />
+                        <div className="px-2 min-w-0 ml-2">
                           <span className="text-xs font-medium text-white">
                             {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
                           </span>
