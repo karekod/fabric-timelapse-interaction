@@ -1,4 +1,3 @@
-
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
@@ -147,7 +146,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const addExampleImage = (url: string) => {
     if (!canvas) return;
     
-    fabric.Image.fromURL(url, (img) => {
+    FabricImage.fromURL(url, (img) => {
       // Scale down large images
       if (img.width && img.width > 300) {
         const scale = 300 / img.width;
@@ -360,7 +359,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 />
               </div>
               <Button 
-                variant="primary" 
+                variant="default" 
                 onClick={validateGeminiApiKey}
                 className="w-full flex items-center"
               >
