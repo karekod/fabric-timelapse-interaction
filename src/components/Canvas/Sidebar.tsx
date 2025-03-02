@@ -146,29 +146,28 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const addExampleImage = (url: string) => {
     if (!canvas) return;
     
-    FabricImage.fromURL(url, {
-      scaleX: 1,
-      scaleY: 1
-    }).then((img) => {
-      // Scale down large images
-      if (img.width && img.width > 300) {
-        const scale = 300 / img.width;
-        img.scale(scale);
-      }
-      
-      img.set({
-        left: 100,
-        top: 100,
+    FabricImage.fromURL(url)
+      .then((img) => {
+        // Scale down large images
+        if (img.width && img.width > 300) {
+          const scale = 300 / img.width;
+          img.scale(scale);
+        }
+        
+        img.set({
+          left: 100,
+          top: 100,
+        });
+        
+        img.customId = crypto.randomUUID();
+        canvas.add(img);
+        canvas.setActiveObject(img);
+        canvas.renderAll();
+      })
+      .catch(err => {
+        console.error("Error loading image:", err);
+        toast.error("Failed to load image");
       });
-      
-      img.customId = crypto.randomUUID();
-      canvas.add(img);
-      canvas.setActiveObject(img);
-      canvas.renderAll();
-    }).catch(err => {
-      console.error("Error loading image:", err);
-      toast.error("Failed to load image");
-    });
   };
 
   const validateGeminiApiKey = () => {
