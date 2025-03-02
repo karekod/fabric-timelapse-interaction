@@ -653,7 +653,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <div 
                   key={template.id}
                   onClick={() => loadTemplate(template.id)}
-                  className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors"
+                  className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-blue-500 transition-colors shadow-sm hover:shadow-md"
                 >
                   <div className="h-24 relative">
                     <img 
@@ -661,15 +661,12 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                       alt={template.name}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/30 transition-colors">
                       <span className="text-white font-bold text-sm">{template.name}</span>
                     </div>
                   </div>
-                  <div className="p-1">
-                    <div className="text-xs text-center">{template.type}</div>
-                    <div className="mt-1 text-xs bg-neutral-900 p-1 rounded max-h-10 overflow-auto">
-                      <pre className="text-[8px] text-neutral-400">{JSON.stringify({id: template.id, type: template.type})}</pre>
-                    </div>
+                  <div className="p-2 bg-neutral-800/50">
+                    <div className="text-xs text-center text-neutral-300">{template.type}</div>
                   </div>
                 </div>
               ))}
