@@ -1,4 +1,3 @@
-
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
@@ -39,6 +38,8 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const [textColor, setTextColor] = useState("#ffffff");
   const [fontSize, setFontSize] = useState(16);
   const [fontFamily, setFontFamily] = useState("Arial");
+  const [uploadedImages, setUploadedImages] = useState<{id: string, src: string}[]>([]);
+  const [selectedUploadedImage, setSelectedUploadedImage] = useState<string | null>(null);
 
   const addShape = (type: "rectangle" | "circle") => {
     if (!canvas) return;
@@ -123,25 +124,14 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       imgElement.src = event.target?.result as string;
       
       imgElement.onload = () => {
-        const fabricImage = new FabricImage(imgElement);
+        const imageId = crypto.randomUUID();
+        setUploadedImages(prev => [...prev, {
+          id: imageId,
+          src: event.target?.result as string
+        }]);
         
-        // Scale down large images
-        if (fabricImage.width && fabricImage.width > 300) {
-          const scale = 300 / fabricImage.width;
-          fabricImage.scale(scale);
-        }
-        
-        fabricImage.set({
-          left: 100,
-          top: 100,
-        });
-        
-        fabricImage.customId = crypto.randomUUID();
-        
-        // Instead of adding to canvas, display in the upload section
         toast.success("Image uploaded successfully");
         
-        // Clear the file input
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -151,12 +141,38 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     reader.readAsDataURL(file);
   };
 
+  const addUploadedImageToCanvas = (imageSrc: string) => {
+    if (!canvas) return;
+    
+    const imgElement = document.createElement('img');
+    imgElement.src = imageSrc;
+    
+    imgElement.onload = () => {
+      const fabricImage = new FabricImage(imgElement);
+      
+      if (fabricImage.width && fabricImage.width > 300) {
+        const scale = 300 / fabricImage.width;
+        fabricImage.scale(scale);
+      }
+      
+      fabricImage.set({
+        left: 100,
+        top: 100,
+      });
+      
+      fabricImage.customId = crypto.randomUUID();
+      canvas.add(fabricImage);
+      canvas.setActiveObject(fabricImage);
+      canvas.renderAll();
+      toast.success("Image added to canvas");
+    };
+  };
+
   const addExampleImage = (url: string) => {
     if (!canvas) return;
     
     FabricImage.fromURL(url)
       .then((img) => {
-        // Scale down large images
         if (img.width && img.width > 300) {
           const scale = 300 / img.width;
           img.scale(scale);
@@ -184,8 +200,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       return;
     }
     
-    // Here we'd typically validate the API key by making a simple request
-    // For now, we'll just show a success message
     toast.success("API key saved successfully!");
     localStorage.setItem("gemini_api_key", geminiApiKey);
   };
@@ -203,12 +217,12 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     }
   };
 
-  const applyFontToSelectedText = (font: string) => {
+  const applyFontToSelectedText = () => {
     if (!canvas) return;
     
     const activeObject = canvas.getActiveObject();
     if (activeObject && activeObject.type === 'i-text') {
-      (activeObject as IText).set('fontFamily', font);
+      (activeObject as IText).set('fontFamily', fontFamily);
       canvas.renderAll();
       toast.success("Font applied");
     } else {
@@ -216,18 +230,90 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     }
   };
 
-  const applyFontSizeToSelectedText = (size: number) => {
+  const applyFontSizeToSelectedText = () => {
     if (!canvas) return;
     
     const activeObject = canvas.getActiveObject();
     if (activeObject && activeObject.type === 'i-text') {
-      (activeObject as IText).set('fontSize', size);
+      (activeObject as IText).set('fontSize', fontSize);
       canvas.renderAll();
       toast.success("Font size applied");
     } else {
       toast.error("No text selected");
     }
   };
+
+  const loadTemplate = (templateId: string) => {
+    if (!canvas) return;
+    
+    canvas.clear();
+    
+    const templateData = sampleTemplates.find(t => t.id === templateId);
+    if (templateData) {
+      toast.success(`Loading template: ${templateData.name}`);
+      
+      if (templateData.type === 'presentation') {
+        addText('heading');
+      } else if (templateData.type === 'social') {
+        addShape('rectangle');
+        addText('subheading');
+      }
+    }
+  };
+
+  const sampleTemplates = [
+    {
+      id: "template1",
+      name: "Basic Presentation",
+      type: "presentation",
+      thumbnail: "https://picsum.photos/id/1015/300/200",
+      preview: "https://picsum.photos/id/1015/300/200"
+    },
+    {
+      id: "template2",
+      name: "Instagram Story",
+      type: "social",
+      thumbnail: "https://picsum.photos/id/1016/300/200",
+      preview: "https://picsum.photos/id/1016/300/200"
+    },
+    {
+      id: "template3",
+      name: "YouTube Banner",
+      type: "banner",
+      thumbnail: "https://picsum.photos/id/1018/300/200",
+      preview: "https://picsum.photos/id/1018/300/200"
+    },
+    {
+      id: "template4",
+      name: "Data Visualization",
+      type: "infographic",
+      thumbnail: "https://picsum.photos/id/1019/300/200",
+      preview: "https://picsum.photos/id/1019/300/200"
+    }
+  ];
+
+  const savedProjects = [
+    {
+      id: "project1",
+      name: "My Animation Project",
+      thumbnail: "https://picsum.photos/id/1005/500/300",
+      lastEdited: "2023-09-15T10:30:00Z",
+      elements: [
+        { type: "text", properties: { text: "Sample Title", fontSize: 32 } },
+        { type: "shape", properties: { type: "rectangle", fill: "#FF5733" } }
+      ]
+    },
+    {
+      id: "project2",
+      name: "Product Showcase",
+      thumbnail: "https://picsum.photos/id/1011/500/300",
+      lastEdited: "2023-09-10T14:45:00Z",
+      elements: [
+        { type: "image", properties: { src: "https://picsum.photos/id/1011/500/300" } },
+        { type: "text", properties: { text: "Our New Product", fontSize: 24 } }
+      ]
+    }
+  ];
 
   const renderContent = () => {
     switch (activeSection) {
@@ -263,67 +349,60 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             <div className="space-y-4">
               <div>
                 <label className="text-xs text-neutral-400 block mb-1">Text Color</label>
-                <div className="flex gap-2">
-                  <input 
-                    type="color" 
-                    value={textColor}
-                    onChange={(e) => setTextColor(e.target.value)}
-                    className="w-8 h-8 rounded cursor-pointer"
-                  />
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    onClick={() => applyColorToSelectedText(textColor)}
-                    className="flex-1"
-                  >
-                    Apply Color
-                  </Button>
-                </div>
+                <input 
+                  type="color" 
+                  value={textColor}
+                  onChange={(e) => {
+                    setTextColor(e.target.value);
+                    applyColorToSelectedObject(e.target.value);
+                  }}
+                  className="w-full h-8 rounded cursor-pointer"
+                />
               </div>
               
               <div>
                 <label className="text-xs text-neutral-400 block mb-1">Font Family</label>
-                <div className="flex gap-2">
-                  <select 
-                    value={fontFamily}
-                    onChange={(e) => setFontFamily(e.target.value)}
-                    className="flex-1 rounded bg-neutral-800 p-2 text-sm"
-                  >
-                    <option value="Arial">Arial</option>
-                    <option value="Times New Roman">Times New Roman</option>
-                    <option value="Courier New">Courier New</option>
-                    <option value="Georgia">Georgia</option>
-                    <option value="Verdana">Verdana</option>
-                  </select>
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    onClick={() => applyFontToSelectedText(fontFamily)}
-                  >
-                    Apply
-                  </Button>
-                </div>
+                <select 
+                  value={fontFamily}
+                  onChange={(e) => {
+                    setFontFamily(e.target.value);
+                    const oldValue = fontFamily;
+                    setFontFamily(e.target.value);
+                    
+                    const activeObject = canvas?.getActiveObject();
+                    if (activeObject && activeObject.type === 'i-text') {
+                      (activeObject as IText).set('fontFamily', e.target.value);
+                      canvas?.renderAll();
+                    }
+                  }}
+                  className="w-full rounded bg-neutral-800 p-2 text-sm"
+                >
+                  <option value="Arial">Arial</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Courier New">Courier New</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
               </div>
               
               <div>
                 <label className="text-xs text-neutral-400 block mb-1">Font Size: {fontSize}px</label>
-                <div className="flex gap-2 items-center">
-                  <Slider
-                    value={[fontSize]}
-                    min={8}
-                    max={72}
-                    step={1}
-                    onValueChange={(value) => setFontSize(value[0])}
-                    className="flex-1"
-                  />
-                  <Button 
-                    size="sm" 
-                    variant="secondary" 
-                    onClick={() => applyFontSizeToSelectedText(fontSize)}
-                  >
-                    Apply
-                  </Button>
-                </div>
+                <Slider
+                  value={[fontSize]}
+                  min={8}
+                  max={72}
+                  step={1}
+                  onValueChange={(value) => {
+                    setFontSize(value[0]);
+                    
+                    const activeObject = canvas?.getActiveObject();
+                    if (activeObject && activeObject.type === 'i-text') {
+                      (activeObject as IText).set('fontSize', value[0]);
+                      canvas?.renderAll();
+                    }
+                  }}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>
@@ -446,22 +525,15 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             
             <div className="text-xs text-neutral-500 mt-6 mb-2">SHAPE COLOR</div>
             <div className="space-y-2">
-              <div className="flex gap-2 items-center">
-                <input 
-                  type="color" 
-                  value={shapeColor}
-                  onChange={(e) => setShapeColor(e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer"
-                />
-                <Button 
-                  variant="secondary" 
-                  onClick={() => applyColorToSelectedObject(shapeColor)}
-                  className="flex-1"
-                >
-                  <Palette className="w-4 h-4 mr-2" />
-                  Apply Color
-                </Button>
-              </div>
+              <input 
+                type="color" 
+                value={shapeColor}
+                onChange={(e) => {
+                  setShapeColor(e.target.value);
+                  applyColorToSelectedObject(e.target.value);
+                }}
+                className="w-full h-8 rounded cursor-pointer"
+              />
               
               <div className="grid grid-cols-5 gap-2">
                 {["#FF5733", "#33FF57", "#3357FF", "#F3FF33", "#FF33F3"].map(color => (
@@ -501,17 +573,26 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             </Button>
             
             <div className="text-xs text-neutral-500 mt-6 mb-2">UPLOADED IMAGES</div>
-            <div className="h-40 bg-neutral-800/30 rounded-lg flex items-center justify-center text-neutral-500 text-xs">
-              Your uploaded images will appear here
+            <div className={`${uploadedImages.length === 0 ? 'flex items-center justify-center' : 'grid grid-cols-2 gap-2'} h-40 bg-neutral-800/30 rounded-lg overflow-auto p-2`}>
+              {uploadedImages.length === 0 ? (
+                <span className="text-neutral-500 text-xs">Your uploaded images will appear here</span>
+              ) : (
+                uploadedImages.map(img => (
+                  <div 
+                    key={img.id}
+                    onClick={() => addUploadedImageToCanvas(img.src)}
+                    className={`cursor-pointer border-2 rounded p-1 flex items-center justify-center h-full
+                      ${selectedUploadedImage === img.id ? 'border-blue-500' : 'border-transparent hover:border-neutral-500'}`}
+                  >
+                    <img 
+                      src={img.src} 
+                      alt="Uploaded image" 
+                      className="max-h-full max-w-full object-contain"
+                    />
+                  </div>
+                ))
+              )}
             </div>
-            
-            <Button 
-              variant="default" 
-              className="w-full mt-2"
-              onClick={() => toast.info("Adding to canvas feature will be implemented soon")}
-            >
-              Add Selected to Canvas
-            </Button>
           </div>
         );
 
@@ -520,27 +601,37 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           <div className="space-y-4">
             <div className="text-xs text-neutral-500 mb-4">SAVED PROJECTS</div>
             <div className="space-y-3">
-              <div className="border border-neutral-700 rounded-lg overflow-hidden">
-                <div className="h-36 bg-neutral-800 relative">
-                  <img 
-                    src="https://picsum.photos/id/1005/500/300" 
-                    alt="Project thumbnail" 
-                    className="w-full h-full object-cover opacity-60"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                    <h3 className="font-medium text-sm">My Animation Project</h3>
-                    <p className="text-xs text-neutral-400">Last edited: Today</p>
+              {savedProjects.map(project => (
+                <div key={project.id} className="border border-neutral-700 rounded-lg overflow-hidden">
+                  <div className="h-36 bg-neutral-800 relative">
+                    <img 
+                      src={project.thumbnail} 
+                      alt={project.name} 
+                      className="w-full h-full object-cover opacity-60"
+                    />
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                      <h3 className="font-medium text-sm">{project.name}</h3>
+                      <p className="text-xs text-neutral-400">
+                        Last edited: {new Date(project.lastEdited).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="p-2 flex justify-between items-center">
+                    <button className="text-xs text-neutral-400 hover:text-white">
+                      Edit
+                    </button>
+                    <button className="text-xs text-neutral-400 hover:text-white">
+                      Delete
+                    </button>
+                  </div>
+                  <div className="p-2 border-t border-neutral-800">
+                    <div className="text-xs text-neutral-400 mb-1">Project data (JSON):</div>
+                    <div className="bg-neutral-900 p-1 rounded text-xs text-neutral-300 max-h-20 overflow-auto">
+                      <pre>{JSON.stringify(project, null, 2)}</pre>
+                    </div>
                   </div>
                 </div>
-                <div className="p-2 flex justify-between items-center">
-                  <button className="text-xs text-neutral-400 hover:text-white">
-                    Edit
-                  </button>
-                  <button className="text-xs text-neutral-400 hover:text-white">
-                    Delete
-                  </button>
-                </div>
-              </div>
+              ))}
             </div>
             
             <Button 
@@ -558,41 +649,30 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           <div className="space-y-4">
             <div className="text-xs text-neutral-500 mb-4">TEMPLATE GALLERY</div>
             <div className="grid grid-cols-2 gap-3">
-              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
-                <div className="h-24 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">Presentation</span>
+              {sampleTemplates.map(template => (
+                <div 
+                  key={template.id}
+                  onClick={() => loadTemplate(template.id)}
+                  className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors"
+                >
+                  <div className="h-24 relative">
+                    <img 
+                      src={template.thumbnail} 
+                      alt={template.name}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40">
+                      <span className="text-white font-bold text-sm">{template.name}</span>
+                    </div>
+                  </div>
+                  <div className="p-1">
+                    <div className="text-xs text-center">{template.type}</div>
+                    <div className="mt-1 text-xs bg-neutral-900 p-1 rounded max-h-10 overflow-auto">
+                      <pre className="text-[8px] text-neutral-400">{JSON.stringify({id: template.id, type: template.type})}</pre>
+                    </div>
+                  </div>
                 </div>
-                <div className="p-1 text-center">
-                  <span className="text-xs">Basic Slides</span>
-                </div>
-              </div>
-              
-              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
-                <div className="h-24 bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">Social Media</span>
-                </div>
-                <div className="p-1 text-center">
-                  <span className="text-xs">Instagram Story</span>
-                </div>
-              </div>
-              
-              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
-                <div className="h-24 bg-gradient-to-r from-red-500 to-yellow-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">Banner</span>
-                </div>
-                <div className="p-1 text-center">
-                  <span className="text-xs">YouTube</span>
-                </div>
-              </div>
-              
-              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
-                <div className="h-24 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">Infographic</span>
-                </div>
-                <div className="p-1 text-center">
-                  <span className="text-xs">Data Viz</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         );
