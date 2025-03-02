@@ -1,14 +1,17 @@
+
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight,
-  Move, Maximize2, RotateCw, Key
+  Move, Maximize2, RotateCw, Palette, Type, 
+  ArrowUp, ArrowDown
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Keyframe } from "@/types/animation";
 import { toast } from "sonner";
+import { Slider } from "@/components/ui/slider";
 
 interface SidebarProps {
   canvas: FabricCanvas | null;
@@ -32,6 +35,10 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const [duration, setDuration] = useState("20");
   const [geminiApiKey, setGeminiApiKey] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [shapeColor, setShapeColor] = useState("#ffffff");
+  const [textColor, setTextColor] = useState("#ffffff");
+  const [fontSize, setFontSize] = useState(16);
+  const [fontFamily, setFontFamily] = useState("Arial");
 
   const addShape = (type: "rectangle" | "circle") => {
     if (!canvas) return;
@@ -42,7 +49,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
         object = new Rect({
           left: 100,
           top: 100,
-          fill: "#ffffff",
+          fill: shapeColor,
           width: 100,
           height: 100,
         });
@@ -51,7 +58,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
         object = new Circle({
           left: 100,
           top: 100,
-          fill: "#ffffff",
+          fill: shapeColor,
           radius: 50,
         });
         break;
@@ -78,7 +85,8 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     const text = new IText(`Double click to edit ${type}`, {
       left: 100,
       top: 100,
-      fill: "#ffffff",
+      fill: textColor,
+      fontFamily: fontFamily,
       ...styles[type],
     });
 
@@ -129,9 +137,9 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
         });
         
         fabricImage.customId = crypto.randomUUID();
-        canvas.add(fabricImage);
-        canvas.setActiveObject(fabricImage);
-        canvas.renderAll();
+        
+        // Instead of adding to canvas, display in the upload section
+        toast.success("Image uploaded successfully");
         
         // Clear the file input
         if (fileInputRef.current) {
@@ -182,6 +190,45 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     localStorage.setItem("gemini_api_key", geminiApiKey);
   };
 
+  const applyColorToSelectedObject = (color: string) => {
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (activeObject) {
+      activeObject.set('fill', color);
+      canvas.renderAll();
+      toast.success("Color applied");
+    } else {
+      toast.error("No object selected");
+    }
+  };
+
+  const applyFontToSelectedText = (font: string) => {
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'i-text') {
+      (activeObject as IText).set('fontFamily', font);
+      canvas.renderAll();
+      toast.success("Font applied");
+    } else {
+      toast.error("No text selected");
+    }
+  };
+
+  const applyFontSizeToSelectedText = (size: number) => {
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'i-text') {
+      (activeObject as IText).set('fontSize', size);
+      canvas.renderAll();
+      toast.success("Font size applied");
+    } else {
+      toast.error("No text selected");
+    }
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "text":
@@ -210,6 +257,74 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <span className="text-sm font-semibold">T</span>
                 <span>Body Text</span>
               </button>
+            </div>
+            
+            <div className="text-xs text-neutral-500 mt-6 mb-2">TEXT OPTIONS</div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs text-neutral-400 block mb-1">Text Color</label>
+                <div className="flex gap-2">
+                  <input 
+                    type="color" 
+                    value={textColor}
+                    onChange={(e) => setTextColor(e.target.value)}
+                    className="w-8 h-8 rounded cursor-pointer"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    onClick={() => applyColorToSelectedText(textColor)}
+                    className="flex-1"
+                  >
+                    Apply Color
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs text-neutral-400 block mb-1">Font Family</label>
+                <div className="flex gap-2">
+                  <select 
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
+                    className="flex-1 rounded bg-neutral-800 p-2 text-sm"
+                  >
+                    <option value="Arial">Arial</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier New">Courier New</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Verdana">Verdana</option>
+                  </select>
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    onClick={() => applyFontToSelectedText(fontFamily)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
+              
+              <div>
+                <label className="text-xs text-neutral-400 block mb-1">Font Size: {fontSize}px</label>
+                <div className="flex gap-2 items-center">
+                  <Slider
+                    value={[fontSize]}
+                    min={8}
+                    max={72}
+                    step={1}
+                    onValueChange={(value) => setFontSize(value[0])}
+                    className="flex-1"
+                  />
+                  <Button 
+                    size="sm" 
+                    variant="secondary" 
+                    onClick={() => applyFontSizeToSelectedText(fontSize)}
+                  >
+                    Apply
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -260,23 +375,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 />
               </button>
             </div>
-            
-            <div className="text-xs text-neutral-500 mt-4 mb-2">UPLOAD IMAGE</div>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-              ref={fileInputRef}
-            />
-            <Button 
-              variant="secondary" 
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              Upload Image
-            </Button>
           </div>
         );
 
@@ -345,6 +443,157 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <span>Circle</span>
               </button>
             </div>
+            
+            <div className="text-xs text-neutral-500 mt-6 mb-2">SHAPE COLOR</div>
+            <div className="space-y-2">
+              <div className="flex gap-2 items-center">
+                <input 
+                  type="color" 
+                  value={shapeColor}
+                  onChange={(e) => setShapeColor(e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer"
+                />
+                <Button 
+                  variant="secondary" 
+                  onClick={() => applyColorToSelectedObject(shapeColor)}
+                  className="flex-1"
+                >
+                  <Palette className="w-4 h-4 mr-2" />
+                  Apply Color
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-5 gap-2">
+                {["#FF5733", "#33FF57", "#3357FF", "#F3FF33", "#FF33F3"].map(color => (
+                  <button 
+                    key={color}
+                    onClick={() => {
+                      setShapeColor(color);
+                      applyColorToSelectedObject(color);
+                    }}
+                    className="w-full h-8 rounded-md"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case "uploads":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">UPLOAD IMAGE</div>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            <Button 
+              variant="secondary" 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Select Image
+            </Button>
+            
+            <div className="text-xs text-neutral-500 mt-6 mb-2">UPLOADED IMAGES</div>
+            <div className="h-40 bg-neutral-800/30 rounded-lg flex items-center justify-center text-neutral-500 text-xs">
+              Your uploaded images will appear here
+            </div>
+            
+            <Button 
+              variant="default" 
+              className="w-full mt-2"
+              onClick={() => toast.info("Adding to canvas feature will be implemented soon")}
+            >
+              Add Selected to Canvas
+            </Button>
+          </div>
+        );
+
+      case "projects":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">SAVED PROJECTS</div>
+            <div className="space-y-3">
+              <div className="border border-neutral-700 rounded-lg overflow-hidden">
+                <div className="h-36 bg-neutral-800 relative">
+                  <img 
+                    src="https://picsum.photos/id/1005/500/300" 
+                    alt="Project thumbnail" 
+                    className="w-full h-full object-cover opacity-60"
+                  />
+                  <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                    <h3 className="font-medium text-sm">My Animation Project</h3>
+                    <p className="text-xs text-neutral-400">Last edited: Today</p>
+                  </div>
+                </div>
+                <div className="p-2 flex justify-between items-center">
+                  <button className="text-xs text-neutral-400 hover:text-white">
+                    Edit
+                  </button>
+                  <button className="text-xs text-neutral-400 hover:text-white">
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <Button 
+              variant="default" 
+              className="w-full"
+              onClick={() => toast.info("Creating new project feature will be implemented soon")}
+            >
+              New Project
+            </Button>
+          </div>
+        );
+
+      case "templates":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">TEMPLATE GALLERY</div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
+                <div className="h-24 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">Presentation</span>
+                </div>
+                <div className="p-1 text-center">
+                  <span className="text-xs">Basic Slides</span>
+                </div>
+              </div>
+              
+              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
+                <div className="h-24 bg-gradient-to-r from-green-500 to-teal-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">Social Media</span>
+                </div>
+                <div className="p-1 text-center">
+                  <span className="text-xs">Instagram Story</span>
+                </div>
+              </div>
+              
+              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
+                <div className="h-24 bg-gradient-to-r from-red-500 to-yellow-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">Banner</span>
+                </div>
+                <div className="p-1 text-center">
+                  <span className="text-xs">YouTube</span>
+                </div>
+              </div>
+              
+              <div className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-neutral-500 transition-colors">
+                <div className="h-24 bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">Infographic</span>
+                </div>
+                <div className="p-1 text-center">
+                  <span className="text-xs">Data Viz</span>
+                </div>
+              </div>
+            </div>
           </div>
         );
 
@@ -364,11 +613,11 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 />
               </div>
               <Button 
-                variant="default" 
+                variant="default"
                 onClick={validateGeminiApiKey}
                 className="w-full flex items-center"
               >
-                <Key className="w-4 h-4 mr-2" />
+                <span className="w-4 h-4 mr-2">🔑</span>
                 Validate API Key
               </Button>
             </div>
@@ -381,6 +630,19 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             Coming soon...
           </div>
         );
+    }
+  };
+
+  const applyColorToSelectedText = (color: string) => {
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'i-text') {
+      (activeObject as IText).set('fill', color);
+      canvas.renderAll();
+      toast.success("Text color applied");
+    } else {
+      toast.error("No text selected");
     }
   };
 
