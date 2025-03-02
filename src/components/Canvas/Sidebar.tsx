@@ -1,3 +1,4 @@
+
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
@@ -258,6 +259,46 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
         addShape('rectangle');
         addText('subheading');
       }
+    }
+  };
+
+  const loadProject = (projectId: string) => {
+    if (!canvas) return;
+    
+    // Clear the current canvas
+    canvas.clear();
+    
+    const projectData = savedProjects.find(p => p.id === projectId);
+    if (projectData) {
+      toast.success(`Loading project: ${projectData.name}`);
+      
+      // Load all elements from the project
+      projectData.elements.forEach(element => {
+        if (element.type === 'text') {
+          const text = new IText(element.properties.text, {
+            left: 100,
+            top: 100,
+            fill: "#ffffff",
+            fontSize: element.properties.fontSize,
+          });
+          text.customId = crypto.randomUUID();
+          canvas.add(text);
+        } else if (element.type === 'shape' && element.properties.type === 'rectangle') {
+          const rect = new Rect({
+            left: 100,
+            top: 100,
+            fill: element.properties.fill,
+            width: 100,
+            height: 100,
+          });
+          rect.customId = crypto.randomUUID();
+          canvas.add(rect);
+        } else if (element.type === 'image' && element.properties.src) {
+          addExampleImage(element.properties.src);
+        }
+      });
+      
+      canvas.renderAll();
     }
   };
 
@@ -604,6 +645,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
               {savedProjects.map(project => (
                 <div 
                   key={project.id}
+                  onClick={() => loadProject(project.id)}
                   className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-blue-500 transition-colors shadow-sm hover:shadow-md"
                 >
                   <div className="h-24 relative">
