@@ -600,34 +600,25 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
         return (
           <div className="space-y-4">
             <div className="text-xs text-neutral-500 mb-4">SAVED PROJECTS</div>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               {savedProjects.map(project => (
-                <div key={project.id} className="border border-neutral-700 rounded-lg overflow-hidden">
-                  <div className="h-36 bg-neutral-800 relative">
+                <div 
+                  key={project.id}
+                  className="border border-neutral-700 rounded-lg overflow-hidden cursor-pointer hover:border-blue-500 transition-colors shadow-sm hover:shadow-md"
+                >
+                  <div className="h-24 relative">
                     <img 
                       src={project.thumbnail} 
-                      alt={project.name} 
-                      className="w-full h-full object-cover opacity-60"
+                      alt={project.name}
+                      className="w-full h-full object-cover"
                     />
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-                      <h3 className="font-medium text-sm">{project.name}</h3>
-                      <p className="text-xs text-neutral-400">
-                        Last edited: {new Date(project.lastEdited).toLocaleDateString()}
-                      </p>
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/30 transition-colors">
+                      <span className="text-white font-bold text-sm">{project.name}</span>
                     </div>
                   </div>
-                  <div className="p-2 flex justify-between items-center">
-                    <button className="text-xs text-neutral-400 hover:text-white">
-                      Edit
-                    </button>
-                    <button className="text-xs text-neutral-400 hover:text-white">
-                      Delete
-                    </button>
-                  </div>
-                  <div className="p-2 border-t border-neutral-800">
-                    <div className="text-xs text-neutral-400 mb-1">Project data (JSON):</div>
-                    <div className="bg-neutral-900 p-1 rounded text-xs text-neutral-300 max-h-20 overflow-auto">
-                      <pre>{JSON.stringify(project, null, 2)}</pre>
+                  <div className="p-2 bg-neutral-800/50">
+                    <div className="text-xs text-center text-neutral-300">
+                      Last edited: {new Date(project.lastEdited).toLocaleDateString()}
                     </div>
                   </div>
                 </div>
@@ -707,19 +698,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             Coming soon...
           </div>
         );
-    }
-  };
-
-  const applyColorToSelectedText = (color: string) => {
-    if (!canvas) return;
-    
-    const activeObject = canvas.getActiveObject();
-    if (activeObject && activeObject.type === 'i-text') {
-      (activeObject as IText).set('fill', color);
-      canvas.renderAll();
-      toast.success("Text color applied");
-    } else {
-      toast.error("No text selected");
     }
   };
 
