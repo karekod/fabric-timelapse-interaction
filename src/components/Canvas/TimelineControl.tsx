@@ -1,4 +1,3 @@
-
 import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { 
@@ -6,10 +5,18 @@ import {
   EyeOff,
   Eye,
   Trash2,
-  Copy
+  Copy,
+  Move,
+  Maximize2,
+  RotateCw,
+  Fade,
+  Palette,
+  Blur,
+  RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TimelineLayer, Keyframe } from "@/types/animation";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 interface TimelineControlProps {
   currentTime: number;
@@ -58,7 +65,6 @@ export const TimelineControl = ({
     setTimelineLayers(timelineLayers.map(layer => {
       const isLayerVisible = !layer.isVisible;
       
-      // Update canvas object visibility
       if (canvas) {
         const objects = canvas.getObjects();
         const targetObject = objects.find((obj: any) => obj.customId === layer.elementId);
@@ -80,11 +86,9 @@ export const TimelineControl = ({
     const layerToDuplicate = timelineLayers.find(layer => layer.id === layerId);
     if (!layerToDuplicate || !canvas) return;
 
-    // Create new layer ID and element ID
     const newLayerId = crypto.randomUUID();
     const newElementId = crypto.randomUUID();
 
-    // Clone the object in canvas
     const objects = canvas.getObjects();
     const sourceObject = objects.find((obj: any) => obj.customId === layerToDuplicate.elementId);
     
@@ -100,7 +104,6 @@ export const TimelineControl = ({
       });
     }
 
-    // Create the new timeline layer
     const newLayer: TimelineLayer = {
       ...layerToDuplicate,
       id: newLayerId,
@@ -124,6 +127,19 @@ export const TimelineControl = ({
           : keyframe
       )
     })));
+  };
+
+  const getAnimationTypeIcon = (type: Keyframe['animationType']) => {
+    switch (type) {
+      case 'move': return <Move className="w-3 h-3" />;
+      case 'scale': return <Maximize2 className="w-3 h-3" />;
+      case 'rotate': return <RotateCw className="w-3 h-3" />;
+      case 'fade': return <Fade className="w-3 h-3" />;
+      case 'color': return <Palette className="w-3 h-3" />;
+      case 'blur': return <Blur className="w-3 h-3" />;
+      case 'flip': return <RotateCcw className="w-3 h-3" />;
+      default: return <Move className="w-3 h-3" />;
+    }
   };
 
   const handleDragStart = (
@@ -162,14 +178,14 @@ export const TimelineControl = ({
         keyframes: layer.keyframes.map(keyframe => {
           if (keyframe.id === draggingItem) {
             if (dragType === "keyframe") {
-              const moveSpeed = 0.5; // Increased for smoother movement
+              const moveSpeed = 0.5;
               const newStartTime = Math.max(
                 0,
                 Math.min(100 - keyframe.duration, keyframe.startTime + deltaX * moveSpeed)
               );
               return { ...keyframe, startTime: newStartTime };
             } else if (dragType === "duration") {
-              const resizeSpeed = 0.3; // Increased for smoother resizing
+              const resizeSpeed = 0.3;
               const newDuration = Math.max(
                 5,
                 Math.min(100 - keyframe.startTime, keyframe.duration + deltaX * resizeSpeed)
@@ -296,7 +312,41 @@ export const TimelineControl = ({
                             handleDragStart(e, keyframe.id, "startTime");
                           }}
                         />
-                        <div className="px-2 min-w-0 ml-2">
+                        <div className="px-2 min-w-0 ml-2 flex items-center gap-1">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-5 w-5 rounded-full bg-neutral-800"
+                              >
+                                {getAnimationTypeIcon(keyframe.animationType)}
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start">
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'move')}>
+                                <Move className="w-4 h-4 mr-2" /> Move
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'scale')}>
+                                <Maximize2 className="w-4 h-4 mr-2" /> Scale
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'rotate')}>
+                                <RotateCw className="w-4 h-4 mr-2" /> Rotate
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'fade')}>
+                                <Fade className="w-4 h-4 mr-2" /> Fade
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'color')}>
+                                <Palette className="w-4 h-4 mr-2" /> Color
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'blur')}>
+                                <Blur className="w-4 h-4 mr-2" /> Blur
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'flip')}>
+                                <RotateCcw className="w-4 h-4 mr-2" /> Flip
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                           <span className="text-xs font-medium text-white">
                             {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
                           </span>

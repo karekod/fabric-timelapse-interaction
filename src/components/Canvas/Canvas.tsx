@@ -95,9 +95,19 @@ export const Canvas = () => {
 
     window.addEventListener("resize", handleResize);
 
+    // Listen for timeline layer updates from Sidebar
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data.type === 'UPDATE_TIMELINE_LAYERS' && event.data.layers) {
+        setTimelineLayers(prev => [...prev, ...event.data.layers]);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+
     return () => {
       fabricCanvas.dispose();
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener('message', handleMessage);
     };
   }, []);
 

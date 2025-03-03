@@ -11,7 +11,7 @@ export interface Keyframe {
   id: string;
   startTime: number;
   duration: number;
-  animationType: 'move' | 'scale' | 'rotate';
+  animationType: 'move' | 'scale' | 'rotate' | 'fade' | 'color' | 'blur' | 'flip';
   properties: Record<string, any>;
 }
 

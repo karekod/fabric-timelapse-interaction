@@ -1,15 +1,14 @@
-
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight,
   Move, Maximize2, RotateCw, Palette, Type, 
-  ArrowUp, ArrowDown
+  ArrowUp, ArrowDown, Fade, Blur, RotateCcw
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Keyframe } from "@/types/animation";
+import { Keyframe, TimelineLayer } from "@/types/animation";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 
@@ -26,6 +25,37 @@ type MenuSection =
   | "animations" 
   | "settings" 
   | "templates";
+
+interface Template {
+  id: string;
+  name: string;
+  type: string;
+  thumbnail: string;
+  preview: string;
+  animations?: {
+    elementType: string;
+    animationType: Keyframe['animationType'];
+    startTime: number;
+    duration: number;
+  }[];
+}
+
+interface Project {
+  id: string;
+  name: string;
+  thumbnail: string;
+  lastEdited: string;
+  elements: {
+    type: string;
+    properties: Record<string, any>;
+  }[];
+  animations?: {
+    elementType: string;
+    animationType: Keyframe['animationType'];
+    startTime: number;
+    duration: number;
+  }[];
+}
 
 export const Sidebar = ({ canvas }: SidebarProps) => {
   const [activeSection, setActiveSection] = useState<MenuSection>("text");
@@ -244,6 +274,23 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     }
   };
 
+  const addAnimationLayer = (elementId: string, elementName: string, animationType: Keyframe['animationType'], startTime: number, duration: number) => {
+    const newLayer: TimelineLayer = {
+      id: crypto.randomUUID(),
+      elementId: elementId,
+      name: elementName,
+      keyframes: [{
+        id: crypto.randomUUID(),
+        startTime: startTime,
+        duration: duration,
+        animationType: animationType,
+        properties: {},
+      }],
+    };
+    
+    return newLayer;
+  };
+
   const loadTemplate = (templateId: string) => {
     if (!canvas) return;
     
@@ -253,11 +300,53 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     if (templateData) {
       toast.success(`Loading template: ${templateData.name}`);
       
+      let createdElements: {id: string, type: string, name: string}[] = [];
+      
       if (templateData.type === 'presentation') {
-        addText('heading');
+        const text = addText('heading');
+        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Heading'});
       } else if (templateData.type === 'social') {
-        addShape('rectangle');
-        addText('subheading');
+        const rect = addShape('rectangle');
+        if (rect) createdElements.push({id: rect.customId!, type: 'shape', name: 'Rectangle'});
+        
+        const text = addText('subheading');
+        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Subheading'});
+      } else if (templateData.type === 'banner') {
+        const rect = addShape('rectangle');
+        if (rect) createdElements.push({id: rect.customId!, type: 'shape', name: 'Rectangle'});
+        
+        const img = addExampleImage("https://picsum.photos/id/1018/300/200");
+      } else if (templateData.type === 'infographic') {
+        const circle = addShape('circle');
+        if (circle) createdElements.push({id: circle.customId!, type: 'shape', name: 'Circle'});
+        
+        const text = addText('body');
+        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Body Text'});
+      }
+      
+      if (templateData.animations && window.parent.postMessage) {
+        const animationLayers: TimelineLayer[] = [];
+        
+        templateData.animations.forEach((anim, index) => {
+          if (createdElements[index]) {
+            const element = createdElements[index];
+            const layer = addAnimationLayer(
+              element.id,
+              element.name,
+              anim.animationType,
+              anim.startTime,
+              anim.duration
+            );
+            animationLayers.push(layer);
+          }
+        });
+        
+        window.parent.postMessage({
+          type: 'UPDATE_TIMELINE_LAYERS',
+          layers: animationLayers
+        }, '*');
+        
+        toast.success("Template animations added to timeline");
       }
     }
   };
@@ -265,15 +354,15 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const loadProject = (projectId: string) => {
     if (!canvas) return;
     
-    // Clear the current canvas
     canvas.clear();
     
     const projectData = savedProjects.find(p => p.id === projectId);
     if (projectData) {
       toast.success(`Loading project: ${projectData.name}`);
       
-      // Load all elements from the project
-      projectData.elements.forEach(element => {
+      let createdElements: {id: string, type: string, name: string}[] = [];
+      
+      projectData.elements.forEach((element, index) => {
         if (element.type === 'text') {
           const text = new IText(element.properties.text, {
             left: 100,
@@ -283,6 +372,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           });
           text.customId = crypto.randomUUID();
           canvas.add(text);
+          createdElements.push({id: text.customId, type: 'text', name: `Text ${index + 1}`});
         } else if (element.type === 'shape' && element.properties.type === 'rectangle') {
           const rect = new Rect({
             left: 100,
@@ -293,47 +383,117 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           });
           rect.customId = crypto.randomUUID();
           canvas.add(rect);
+          createdElements.push({id: rect.customId, type: 'shape', name: `Shape ${index + 1}`});
         } else if (element.type === 'image' && element.properties.src) {
           addExampleImage(element.properties.src);
         }
       });
       
+      if (projectData.animations && window.parent.postMessage) {
+        const animationLayers: TimelineLayer[] = [];
+        
+        projectData.animations.forEach((anim, index) => {
+          if (createdElements[index]) {
+            const element = createdElements[index];
+            const layer = addAnimationLayer(
+              element.id,
+              element.name,
+              anim.animationType,
+              anim.startTime,
+              anim.duration
+            );
+            animationLayers.push(layer);
+          }
+        });
+        
+        window.parent.postMessage({
+          type: 'UPDATE_TIMELINE_LAYERS',
+          layers: animationLayers
+        }, '*');
+        
+        toast.success("Project animations added to timeline");
+      }
+      
       canvas.renderAll();
     }
   };
 
-  const sampleTemplates = [
+  const sampleTemplates: Template[] = [
     {
       id: "template1",
       name: "Basic Presentation",
       type: "presentation",
       thumbnail: "https://picsum.photos/id/1015/300/200",
-      preview: "https://picsum.photos/id/1015/300/200"
+      preview: "https://picsum.photos/id/1015/300/200",
+      animations: [
+        {
+          elementType: "heading",
+          animationType: "fade",
+          startTime: 10,
+          duration: 20
+        }
+      ]
     },
     {
       id: "template2",
       name: "Instagram Story",
       type: "social",
       thumbnail: "https://picsum.photos/id/1016/300/200",
-      preview: "https://picsum.photos/id/1016/300/200"
+      preview: "https://picsum.photos/id/1016/300/200",
+      animations: [
+        {
+          elementType: "rectangle",
+          animationType: "scale",
+          startTime: 0,
+          duration: 15
+        },
+        {
+          elementType: "subheading",
+          animationType: "move",
+          startTime: 20,
+          duration: 25
+        }
+      ]
     },
     {
       id: "template3",
       name: "YouTube Banner",
       type: "banner",
       thumbnail: "https://picsum.photos/id/1018/300/200",
-      preview: "https://picsum.photos/id/1018/300/200"
+      preview: "https://picsum.photos/id/1018/300/200",
+      animations: [
+        {
+          elementType: "rectangle",
+          animationType: "color",
+          startTime: 5,
+          duration: 30
+        }
+      ]
     },
     {
       id: "template4",
       name: "Data Visualization",
       type: "infographic",
       thumbnail: "https://picsum.photos/id/1019/300/200",
-      preview: "https://picsum.photos/id/1019/300/200"
+      preview: "https://picsum.photos/id/1019/300/200",
+      animations: [
+        {
+          elementType: "circle",
+          animationType: "rotate",
+          startTime: 0,
+          duration: 40
+        },
+        {
+          elementType: "text",
+          animationType: "blur",
+          startTime: 45,
+          duration: 20
+        }
+      ]
     }
   ];
 
-  const savedProjects = [
+  const savedProjects: Project[] = [
     {
       id: "project1",
       name: "My Animation Project",
@@ -342,6 +502,20 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       elements: [
         { type: "text", properties: { text: "Sample Title", fontSize: 32 } },
         { type: "shape", properties: { type: "rectangle", fill: "#FF5733" } }
+      ],
+      animations: [
+        {
+          elementType: "text",
+          animationType: "move",
+          startTime: 10,
+          duration: 30
+        },
+        {
+          elementType: "shape",
+          animationType: "scale",
+          startTime: 40,
+          duration: 20
+        }
       ]
     },
     {
@@ -352,6 +526,20 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       elements: [
         { type: "image", properties: { src: "https://picsum.photos/id/1011/500/300" } },
         { type: "text", properties: { text: "Our New Product", fontSize: 24 } }
+      ],
+      animations: [
+        {
+          elementType: "image",
+          animationType: "fade",
+          startTime: 5,
+          duration: 25
+        },
+        {
+          elementType: "text",
+          animationType: "move",
+          startTime: 30,
+          duration: 20
+        }
       ]
     }
   ];
