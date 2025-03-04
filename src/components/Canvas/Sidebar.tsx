@@ -1,9 +1,10 @@
+
 import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight,
   Move, Maximize2, RotateCw, Palette, Type, 
-  ArrowUp, ArrowDown, Fade, Blur, RotateCcw
+  ArrowUp, ArrowDown, EyeOff, RotateCcw
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -303,26 +304,103 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       let createdElements: {id: string, type: string, name: string}[] = [];
       
       if (templateData.type === 'presentation') {
-        const text = addText('heading');
-        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Heading'});
+        // Create a heading text
+        const text = new IText(`Heading for ${templateData.name}`, {
+          left: 100,
+          top: 100,
+          fill: textColor,
+          fontFamily: fontFamily,
+          fontSize: 32,
+          fontWeight: "bold"
+        });
+        text.customId = crypto.randomUUID();
+        canvas.add(text);
+        createdElements.push({id: text.customId, type: 'text', name: 'Heading'});
       } else if (templateData.type === 'social') {
-        const rect = addShape('rectangle');
-        if (rect) createdElements.push({id: rect.customId!, type: 'shape', name: 'Rectangle'});
+        // Create a rectangle
+        const rect = new Rect({
+          left: 100,
+          top: 100,
+          fill: shapeColor,
+          width: 100,
+          height: 100,
+        });
+        rect.customId = crypto.randomUUID();
+        canvas.add(rect);
+        createdElements.push({id: rect.customId, type: 'shape', name: 'Rectangle'});
         
-        const text = addText('subheading');
-        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Subheading'});
+        // Create a subheading text
+        const text = new IText(`Subheading for ${templateData.name}`, {
+          left: 100,
+          top: 220,
+          fill: textColor,
+          fontFamily: fontFamily,
+          fontSize: 24,
+          fontWeight: "semibold"
+        });
+        text.customId = crypto.randomUUID();
+        canvas.add(text);
+        createdElements.push({id: text.customId, type: 'text', name: 'Subheading'});
       } else if (templateData.type === 'banner') {
-        const rect = addShape('rectangle');
-        if (rect) createdElements.push({id: rect.customId!, type: 'shape', name: 'Rectangle'});
+        // Create a rectangle
+        const rect = new Rect({
+          left: 100,
+          top: 100,
+          fill: shapeColor,
+          width: 200,
+          height: 100,
+        });
+        rect.customId = crypto.randomUUID();
+        canvas.add(rect);
+        createdElements.push({id: rect.customId, type: 'shape', name: 'Rectangle'});
         
-        const img = addExampleImage("https://picsum.photos/id/1018/300/200");
+        // Add an image
+        FabricImage.fromURL("https://picsum.photos/id/1018/300/200")
+          .then((img) => {
+            if (img.width && img.width > 300) {
+              const scale = 300 / img.width;
+              img.scale(scale);
+            }
+            
+            img.set({
+              left: 100,
+              top: 220,
+            });
+            
+            img.customId = crypto.randomUUID();
+            canvas.add(img);
+            createdElements.push({id: img.customId, type: 'image', name: 'Image'});
+            canvas.renderAll();
+          })
+          .catch(err => {
+            console.error("Error loading image:", err);
+          });
       } else if (templateData.type === 'infographic') {
-        const circle = addShape('circle');
-        if (circle) createdElements.push({id: circle.customId!, type: 'shape', name: 'Circle'});
+        // Create a circle
+        const circle = new Circle({
+          left: 100,
+          top: 100,
+          fill: shapeColor,
+          radius: 50,
+        });
+        circle.customId = crypto.randomUUID();
+        canvas.add(circle);
+        createdElements.push({id: circle.customId, type: 'shape', name: 'Circle'});
         
-        const text = addText('body');
-        if (text) createdElements.push({id: text.customId!, type: 'text', name: 'Body Text'});
+        // Create body text
+        const text = new IText(`Body text for ${templateData.name}`, {
+          left: 100,
+          top: 220,
+          fill: textColor,
+          fontFamily: fontFamily,
+          fontSize: 16,
+        });
+        text.customId = crypto.randomUUID();
+        canvas.add(text);
+        createdElements.push({id: text.customId, type: 'text', name: 'Body Text'});
       }
+      
+      canvas.renderAll();
       
       if (templateData.animations && window.parent.postMessage) {
         const animationLayers: TimelineLayer[] = [];

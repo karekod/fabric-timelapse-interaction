@@ -9,9 +9,9 @@ import {
   Move,
   Maximize2,
   RotateCw,
-  Fade,
+  EyeOff as FadeIcon,
   Palette,
-  Blur,
+  ArrowDown as BlurIcon,
   RotateCcw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -134,9 +134,9 @@ export const TimelineControl = ({
       case 'move': return <Move className="w-3 h-3" />;
       case 'scale': return <Maximize2 className="w-3 h-3" />;
       case 'rotate': return <RotateCw className="w-3 h-3" />;
-      case 'fade': return <Fade className="w-3 h-3" />;
+      case 'fade': return <FadeIcon className="w-3 h-3" />;
       case 'color': return <Palette className="w-3 h-3" />;
-      case 'blur': return <Blur className="w-3 h-3" />;
+      case 'blur': return <BlurIcon className="w-3 h-3" />;
       case 'flip': return <RotateCcw className="w-3 h-3" />;
       default: return <Move className="w-3 h-3" />;
     }
@@ -334,13 +334,13 @@ export const TimelineControl = ({
                                 <RotateCw className="w-4 h-4 mr-2" /> Rotate
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'fade')}>
-                                <Fade className="w-4 h-4 mr-2" /> Fade
+                                <FadeIcon className="w-4 h-4 mr-2" /> Fade
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'color')}>
                                 <Palette className="w-4 h-4 mr-2" /> Color
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'blur')}>
-                                <Blur className="w-4 h-4 mr-2" /> Blur
+                                <BlurIcon className="w-4 h-4 mr-2" /> Blur
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => changeAnimationType(keyframe.id, 'flip')}>
                                 <RotateCcw className="w-4 h-4 mr-2" /> Flip
