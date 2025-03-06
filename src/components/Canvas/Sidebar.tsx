@@ -6,6 +6,7 @@ import {
   Layers
 } from "lucide-react";
 import { useState, useRef } from "react";
+import { Canvas as FabricCanvas, Rect, Circle, IText, Image as FabricImage } from "fabric";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Keyframe, TimelineLayer } from "@/types/animation";

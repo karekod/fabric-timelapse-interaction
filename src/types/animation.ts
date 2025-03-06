@@ -1,4 +1,6 @@
 
+import { Canvas } from "fabric";
+
 export interface TimelineLayer {
   id: string;
   elementId: string;
