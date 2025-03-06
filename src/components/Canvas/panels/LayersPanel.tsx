@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
+import { Canvas } from 'fabric';
 import { ArrowUp, ArrowDown, EyeOff, Eye, Trash2 } from "lucide-react";
 import { TimelineLayer } from "@/types/animation";
 
 interface LayersPanelProps {
-  canvas: fabric.Canvas | null;
+  canvas: Canvas | null;
   timelineLayers: TimelineLayer[];
   setTimelineLayers: React.Dispatch<React.SetStateAction<TimelineLayer[]>>;
 }

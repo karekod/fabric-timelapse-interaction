@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { Rect, Circle } from 'fabric';
+import { Canvas, Rect, Circle } from 'fabric';
 import { toast } from "sonner";
 
 interface ShapesPanelProps {
-  canvas: fabric.Canvas | null;
+  canvas: Canvas | null;
 }
 
 export const ShapesPanel = ({ canvas }: ShapesPanelProps) => {

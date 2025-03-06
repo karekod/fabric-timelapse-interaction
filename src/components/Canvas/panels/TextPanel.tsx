@@ -1,12 +1,12 @@
 
 import { useState } from 'react';
-import { IText } from 'fabric';
+import { Canvas, IText } from 'fabric';
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { toast } from "sonner";
 
 interface TextPanelProps {
-  canvas: fabric.Canvas | null;
+  canvas: Canvas | null;
 }
 
 export const TextPanel = ({ canvas }: TextPanelProps) => {
