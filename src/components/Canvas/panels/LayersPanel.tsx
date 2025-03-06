@@ -75,49 +75,53 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
   };
 
   return (
-    <div className="space-y-4">
-      <div className="text-xs text-neutral-500 mb-4">LAYERS</div>
-      <div className="space-y-2">
+    <div className="space-y-2">
+      <div className="text-xs font-semibold text-neutral-300 mb-2 border-b border-neutral-700 pb-1">LAYERS</div>
+      <div className="space-y-1.5">
         {timelineLayers.map((layer) => (
           <div 
             key={layer.id}
-            className="flex items-center justify-between bg-neutral-800/50 p-2 rounded-lg group"
+            className="flex items-center justify-between bg-neutral-800/60 hover:bg-neutral-800 p-1.5 rounded-md group transition-colors"
           >
-            <span className="text-sm truncate flex-1">{layer.name}</span>
-            <div className="flex gap-1">
+            <span className="text-xs truncate flex-1 pl-1">{layer.name}</span>
+            <div className="flex gap-0.5">
               <button
                 onClick={() => toggleLayerVisibility(layer.id)}
                 className="p-1 hover:bg-neutral-700 rounded"
+                title={layer.isVisible === false ? "Show layer" : "Hide layer"}
               >
                 {layer.isVisible === false ? (
-                  <EyeOff className="w-4 h-4" />
+                  <EyeOff className="w-3.5 h-3.5" />
                 ) : (
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-3.5 h-3.5" />
                 )}
               </button>
               <button
                 onClick={() => moveLayerUp(layer.id)}
                 className="p-1 hover:bg-neutral-700 rounded"
+                title="Move up"
               >
-                <ArrowUp className="w-4 h-4" />
+                <ArrowUp className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => moveLayerDown(layer.id)}
                 className="p-1 hover:bg-neutral-700 rounded"
+                title="Move down"
               >
-                <ArrowDown className="w-4 h-4" />
+                <ArrowDown className="w-3.5 h-3.5" />
               </button>
               <button
                 onClick={() => deleteLayer(layer.id)}
                 className="p-1 hover:bg-neutral-700 rounded text-red-400"
+                title="Delete layer"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
         ))}
         {timelineLayers.length === 0 && (
-          <div className="text-center text-neutral-500 text-sm py-4">
+          <div className="text-center text-neutral-500 text-xs py-2 bg-neutral-800/20 rounded-md">
             No layers available
           </div>
         )}

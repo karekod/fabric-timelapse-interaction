@@ -1,4 +1,3 @@
-
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight, Layers,
@@ -879,8 +878,8 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
 
   return (
     <div className="w-64 border-r border-neutral-800 bg-[#0f1116] flex">
-      <div className="w-16 border-r border-neutral-800 py-4">
-        <div className="flex flex-col items-center space-y-4">
+      <div className="w-14 border-r border-neutral-800 py-2">
+        <div className="flex flex-col items-center space-y-1">
           <SidebarMenuButton
             icon={FileText}
             active={activeSection === "text"}
@@ -903,32 +902,39 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             Shapes
           </SidebarMenuButton>
           <SidebarMenuButton
+            icon={Layers}
+            active={activeSection === "layers"}
+            onClick={() => setActiveSection("layers")}
+          >
+            Layers
+          </SidebarMenuButton>
+          <SidebarMenuButton
             icon={Play}
             active={activeSection === "animations"}
             onClick={() => setActiveSection("animations")}
           >
-            Animations
+            Anim
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={FolderOpen}
             active={activeSection === "projects"}
             onClick={() => setActiveSection("projects")}
           >
-            Projects
+            Proj
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Upload}
             active={activeSection === "uploads"}
             onClick={() => setActiveSection("uploads")}
           >
-            Uploads
+            Upload
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Layout}
             active={activeSection === "templates"}
             onClick={() => setActiveSection("templates")}
           >
-            Templates
+            Temp
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Settings}
@@ -937,16 +943,9 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           >
             Settings
           </SidebarMenuButton>
-          <SidebarMenuButton
-            icon={Layers}
-            active={activeSection === "layers"}
-            onClick={() => setActiveSection("layers")}
-          >
-            Layers
-          </SidebarMenuButton>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-3">
         {renderContent()}
       </div>
     </div>

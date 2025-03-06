@@ -12,12 +12,12 @@ export const SidebarMenuButton = ({ icon: Icon, active, onClick, children }: Sid
   return (
     <button
       onClick={onClick}
-      className={`w-12 h-16 flex flex-col items-center justify-center gap-1 rounded-lg ${
+      className={`w-12 h-12 flex flex-col items-center justify-center gap-1 rounded-lg ${
         active ? "bg-neutral-800" : "hover:bg-neutral-800/50"
       }`}
     >
-      <Icon className="w-5 h-5" />
-      <span className="text-[10px] font-medium">{children}</span>
+      <Icon className="w-4 h-4" />
+      <span className="text-[9px] font-medium">{children}</span>
     </button>
   );
 };

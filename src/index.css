@@ -34,6 +34,15 @@
     --ring: 0 0% 3.9%;
  
     --radius: 0.5rem;
+
+    --sidebar-background: 224 34% 8%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 40% 50%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 217 19% 17%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 217 19% 14%;
+    --sidebar-ring: 0 0% 83.1%;
   }
  
   .dark {
@@ -76,3 +85,16 @@
   }
 }
 
+/* Additional professional UI styling */
+@layer components {
+  .glass {
+    background: rgba(17, 25, 40, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .card-gradient {
+    background-image: linear-gradient(to bottom right, hsl(224, 34%, 8%), hsl(223, 31%, 14%));
+  }
+}
