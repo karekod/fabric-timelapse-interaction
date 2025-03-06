@@ -1,3 +1,4 @@
+
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight, Layers,
@@ -917,3 +918,37 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Upload}
+            active={activeSection === "uploads"}
+            onClick={() => setActiveSection("uploads")}
+          >
+            Uploads
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Layout}
+            active={activeSection === "templates"}
+            onClick={() => setActiveSection("templates")}
+          >
+            Templates
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Settings}
+            active={activeSection === "settings"}
+            onClick={() => setActiveSection("settings")}
+          >
+            Settings
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Layers}
+            active={activeSection === "layers"}
+            onClick={() => setActiveSection("layers")}
+          >
+            Layers
+          </SidebarMenuButton>
+        </div>
+      </div>
+      <div className="flex-1 overflow-y-auto p-4">
+        {renderContent()}
+      </div>
+    </div>
+  );
+};
