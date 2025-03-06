@@ -1,10 +1,9 @@
-
-import { Canvas as FabricCanvas, Circle, Rect, IText, Image as FabricImage } from "fabric";
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
   Play, Settings, Layout, ChevronRight,
   Move, Maximize2, RotateCw, Palette, Type, 
-  ArrowUp, ArrowDown, EyeOff, RotateCcw
+  ArrowUp, ArrowDown, EyeOff, Eye, Trash2,
+  Layers
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,8 @@ type MenuSection =
   | "uploads" 
   | "animations" 
   | "settings" 
-  | "templates";
+  | "templates"
+  | "layers";
 
 interface Template {
   id: string;
@@ -72,6 +72,7 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const [fontFamily, setFontFamily] = useState("Arial");
   const [uploadedImages, setUploadedImages] = useState<{id: string, src: string}[]>([]);
   const [selectedUploadedImage, setSelectedUploadedImage] = useState<string | null>(null);
+  const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
 
   const addShape = (type: "rectangle" | "circle") => {
     if (!canvas) return;
@@ -622,6 +623,69 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     }
   ];
 
+  const moveLayerUp = (layerId: string) => {
+    setTimelineLayers(prev => {
+      const index = prev.findIndex(layer => layer.id === layerId);
+      if (index <= 0) return prev;
+      
+      const newLayers = [...prev];
+      const temp = newLayers[index];
+      newLayers[index] = newLayers[index - 1];
+      newLayers[index - 1] = temp;
+      
+      return newLayers;
+    });
+  };
+
+  const moveLayerDown = (layerId: string) => {
+    setTimelineLayers(prev => {
+      const index = prev.findIndex(layer => layer.id === layerId);
+      if (index === -1 || index === prev.length - 1) return prev;
+      
+      const newLayers = [...prev];
+      const temp = newLayers[index];
+      newLayers[index] = newLayers[index + 1];
+      newLayers[index + 1] = temp;
+      
+      return newLayers;
+    });
+  };
+
+  const toggleLayerVisibility = (layerId: string) => {
+    setTimelineLayers(prev => prev.map(layer => {
+      if (layer.id === layerId) {
+        const isVisible = !layer.isVisible;
+        
+        if (canvas) {
+          const objects = canvas.getObjects();
+          const targetObject = objects.find(obj => obj.customId === layer.elementId);
+          if (targetObject) {
+            targetObject.visible = isVisible;
+            canvas.renderAll();
+          }
+        }
+        
+        return { ...layer, isVisible };
+      }
+      return layer;
+    }));
+  };
+
+  const deleteLayer = (layerId: string) => {
+    setTimelineLayers(prev => {
+      const layerToDelete = prev.find(layer => layer.id === layerId);
+      if (layerToDelete && canvas) {
+        const objects = canvas.getObjects();
+        const targetObject = objects.find(obj => obj.customId === layerToDelete.elementId);
+        if (targetObject) {
+          canvas.remove(targetObject);
+          canvas.renderAll();
+        }
+      }
+      return prev.filter(layer => layer.id !== layerId);
+    });
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case "text":
@@ -1000,6 +1064,58 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           </div>
         );
 
+      case "layers":
+        return (
+          <div className="space-y-4">
+            <div className="text-xs text-neutral-500 mb-4">LAYERS</div>
+            <div className="space-y-2">
+              {timelineLayers.map((layer) => (
+                <div 
+                  key={layer.id}
+                  className="flex items-center justify-between bg-neutral-800/50 p-2 rounded-lg group"
+                >
+                  <span className="text-sm truncate flex-1">{layer.name}</span>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => toggleLayerVisibility(layer.id)}
+                      className="p-1 hover:bg-neutral-700 rounded"
+                    >
+                      {layer.isVisible === false ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => moveLayerUp(layer.id)}
+                      className="p-1 hover:bg-neutral-700 rounded"
+                    >
+                      <ArrowUp className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => moveLayerDown(layer.id)}
+                      className="p-1 hover:bg-neutral-700 rounded"
+                    >
+                      <ArrowDown className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteLayer(layer.id)}
+                      className="p-1 hover:bg-neutral-700 rounded text-red-400"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {timelineLayers.length === 0 && (
+                <div className="text-center text-neutral-500 text-sm py-4">
+                  No layers available
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return (
           <div className="flex items-center justify-center h-full text-neutral-500">
@@ -1076,6 +1192,14 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
             }`}
           >
             <Layout className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => setActiveSection("layers")}
+            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
+              activeSection === "layers" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
+            }`}
+          >
+            <Layers className="w-5 h-5" />
           </button>
         </div>
       </div>
