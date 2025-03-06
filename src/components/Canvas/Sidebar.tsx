@@ -1,9 +1,8 @@
 import { 
   FileText, Image, Shapes, FolderOpen, Upload, 
-  Play, Settings, Layout, ChevronRight,
+  Play, Settings, Layout, ChevronRight, Layers,
   Move, Maximize2, RotateCw, Palette, Type, 
   ArrowUp, ArrowDown, EyeOff, Eye, Trash2,
-  Layers
 } from "lucide-react";
 import { useState, useRef } from "react";
 import { Canvas as FabricCanvas, Rect, Circle, IText, Image as FabricImage } from "fabric";
@@ -12,10 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Keyframe, TimelineLayer } from "@/types/animation";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
-
-interface SidebarProps {
-  canvas: FabricCanvas | null;
-}
+import { TextPanel } from "./panels/TextPanel";
+import { ShapesPanel } from "./panels/ShapesPanel";
+import { LayersPanel } from "./panels/LayersPanel";
+import { SidebarMenuButton } from "./SidebarMenuButton";
 
 type MenuSection = 
   | "text" 
@@ -59,93 +58,25 @@ interface Project {
   }[];
 }
 
+interface SidebarProps {
+  canvas: FabricCanvas | null;
+}
+
 export const Sidebar = ({ canvas }: SidebarProps) => {
   const [activeSection, setActiveSection] = useState<MenuSection>("text");
+  const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadedImages, setUploadedImages] = useState<{id: string, src: string}[]>([]);
+  const [selectedUploadedImage, setSelectedUploadedImage] = useState<string | null>(null);
   const [selectedShape, setSelectedShape] = useState<string | null>(null);
   const [selectedAnimation, setSelectedAnimation] = useState<Keyframe['animationType']>('move');
   const [startTime, setStartTime] = useState("0");
   const [duration, setDuration] = useState("20");
   const [geminiApiKey, setGeminiApiKey] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [shapeColor, setShapeColor] = useState("#ffffff");
   const [textColor, setTextColor] = useState("#ffffff");
   const [fontSize, setFontSize] = useState(16);
   const [fontFamily, setFontFamily] = useState("Arial");
-  const [uploadedImages, setUploadedImages] = useState<{id: string, src: string}[]>([]);
-  const [selectedUploadedImage, setSelectedUploadedImage] = useState<string | null>(null);
-  const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
-
-  const addShape = (type: "rectangle" | "circle") => {
-    if (!canvas) return;
-
-    let object;
-    switch (type) {
-      case "rectangle":
-        object = new Rect({
-          left: 100,
-          top: 100,
-          fill: shapeColor,
-          width: 100,
-          height: 100,
-        });
-        break;
-      case "circle":
-        object = new Circle({
-          left: 100,
-          top: 100,
-          fill: shapeColor,
-          radius: 50,
-        });
-        break;
-    }
-
-    if (object) {
-      object.customId = crypto.randomUUID();
-      canvas.add(object);
-      canvas.setActiveObject(object);
-      canvas.renderAll();
-      setSelectedShape(type);
-    }
-  };
-
-  const addText = (type: "heading" | "subheading" | "body") => {
-    if (!canvas) return;
-
-    const styles = {
-      heading: { fontSize: 32, fontWeight: "bold" },
-      subheading: { fontSize: 24, fontWeight: "semibold" },
-      body: { fontSize: 16 },
-    };
-
-    const text = new IText(`Double click to edit ${type}`, {
-      left: 100,
-      top: 100,
-      fill: textColor,
-      fontFamily: fontFamily,
-      ...styles[type],
-    });
-
-    text.customId = crypto.randomUUID();
-    canvas.add(text);
-    canvas.setActiveObject(text);
-    canvas.renderAll();
-  };
-
-  const addInitialText = () => {
-    if (!canvas) return;
-    const welcomeText = new IText("Welcome to Canvas Animation", {
-      left: canvas.width! / 2,
-      top: canvas.height! / 2,
-      originX: 'center',
-      originY: 'center',
-      fill: "#ffffff",
-      fontSize: 24,
-      fontWeight: "bold"
-    });
-    welcomeText.customId = crypto.randomUUID();
-    canvas.add(welcomeText);
-    canvas.renderAll();
-  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canvas || !e.target.files || e.target.files.length === 0) return;
@@ -690,96 +621,17 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
   const renderContent = () => {
     switch (activeSection) {
       case "text":
+        return <TextPanel canvas={canvas} />;
+      case "shapes":
+        return <ShapesPanel canvas={canvas} />;
+      case "layers":
         return (
-          <div className="space-y-4">
-            <div className="text-xs text-neutral-500 mb-4">ADD TEXT</div>
-            <div className="space-y-2">
-              <button 
-                onClick={() => addText("heading")}
-                className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2"
-              >
-                <span className="text-sm font-semibold">H1</span>
-                <span>Heading</span>
-              </button>
-              <button 
-                onClick={() => addText("subheading")}
-                className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2"
-              >
-                <span className="text-sm font-semibold">H2</span>
-                <span>Subheading</span>
-              </button>
-              <button 
-                onClick={() => addText("body")}
-                className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2"
-              >
-                <span className="text-sm font-semibold">T</span>
-                <span>Body Text</span>
-              </button>
-            </div>
-            
-            <div className="text-xs text-neutral-500 mt-6 mb-2">TEXT OPTIONS</div>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs text-neutral-400 block mb-1">Text Color</label>
-                <input 
-                  type="color" 
-                  value={textColor}
-                  onChange={(e) => {
-                    setTextColor(e.target.value);
-                    applyColorToSelectedObject(e.target.value);
-                  }}
-                  className="w-full h-8 rounded cursor-pointer"
-                />
-              </div>
-              
-              <div>
-                <label className="text-xs text-neutral-400 block mb-1">Font Family</label>
-                <select 
-                  value={fontFamily}
-                  onChange={(e) => {
-                    setFontFamily(e.target.value);
-                    const oldValue = fontFamily;
-                    setFontFamily(e.target.value);
-                    
-                    const activeObject = canvas?.getActiveObject();
-                    if (activeObject && activeObject.type === 'i-text') {
-                      (activeObject as IText).set('fontFamily', e.target.value);
-                      canvas?.renderAll();
-                    }
-                  }}
-                  className="w-full rounded bg-neutral-800 p-2 text-sm"
-                >
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times New Roman</option>
-                  <option value="Courier New">Courier New</option>
-                  <option value="Georgia">Georgia</option>
-                  <option value="Verdana">Verdana</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="text-xs text-neutral-400 block mb-1">Font Size: {fontSize}px</label>
-                <Slider
-                  value={[fontSize]}
-                  min={8}
-                  max={72}
-                  step={1}
-                  onValueChange={(value) => {
-                    setFontSize(value[0]);
-                    
-                    const activeObject = canvas?.getActiveObject();
-                    if (activeObject && activeObject.type === 'i-text') {
-                      (activeObject as IText).set('fontSize', value[0]);
-                      canvas?.renderAll();
-                    }
-                  }}
-                  className="w-full"
-                />
-              </div>
-            </div>
-          </div>
+          <LayersPanel 
+            canvas={canvas}
+            timelineLayers={timelineLayers}
+            setTimelineLayers={setTimelineLayers}
+          />
         );
-
       case "image":
         return (
           <div className="space-y-4">
@@ -869,56 +721,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
                 <button className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg">
                   Slide In
                 </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "shapes":
-        return (
-          <div className="space-y-4">
-            <div className="text-xs text-neutral-500 mb-4">ADD SHAPE</div>
-            <div className="space-y-2">
-              <button 
-                onClick={() => addShape("rectangle")}
-                className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2"
-              >
-                <span className="text-sm">◻️</span>
-                <span>Rectangle</span>
-              </button>
-              <button 
-                onClick={() => addShape("circle")}
-                className="w-full text-left px-4 py-3 bg-neutral-800/50 hover:bg-neutral-800 rounded-lg flex items-center gap-2"
-              >
-                <span className="text-sm">⭕</span>
-                <span>Circle</span>
-              </button>
-            </div>
-            
-            <div className="text-xs text-neutral-500 mt-6 mb-2">SHAPE COLOR</div>
-            <div className="space-y-2">
-              <input 
-                type="color" 
-                value={shapeColor}
-                onChange={(e) => {
-                  setShapeColor(e.target.value);
-                  applyColorToSelectedObject(e.target.value);
-                }}
-                className="w-full h-8 rounded cursor-pointer"
-              />
-              
-              <div className="grid grid-cols-5 gap-2">
-                {["#FF5733", "#33FF57", "#3357FF", "#F3FF33", "#FF33F3"].map(color => (
-                  <button 
-                    key={color}
-                    onClick={() => {
-                      setShapeColor(color);
-                      applyColorToSelectedObject(color);
-                    }}
-                    className="w-full h-8 rounded-md"
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
               </div>
             </div>
           </div>
@@ -1065,58 +867,6 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
           </div>
         );
 
-      case "layers":
-        return (
-          <div className="space-y-4">
-            <div className="text-xs text-neutral-500 mb-4">LAYERS</div>
-            <div className="space-y-2">
-              {timelineLayers.map((layer) => (
-                <div 
-                  key={layer.id}
-                  className="flex items-center justify-between bg-neutral-800/50 p-2 rounded-lg group"
-                >
-                  <span className="text-sm truncate flex-1">{layer.name}</span>
-                  <div className="flex gap-1">
-                    <button
-                      onClick={() => toggleLayerVisibility(layer.id)}
-                      className="p-1 hover:bg-neutral-700 rounded"
-                    >
-                      {layer.isVisible === false ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => moveLayerUp(layer.id)}
-                      className="p-1 hover:bg-neutral-700 rounded"
-                    >
-                      <ArrowUp className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => moveLayerDown(layer.id)}
-                      className="p-1 hover:bg-neutral-700 rounded"
-                    >
-                      <ArrowDown className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => deleteLayer(layer.id)}
-                      className="p-1 hover:bg-neutral-700 rounded text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              {timelineLayers.length === 0 && (
-                <div className="text-center text-neutral-500 text-sm py-4">
-                  No layers available
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
       default:
         return (
           <div className="flex items-center justify-center h-full text-neutral-500">
@@ -1130,91 +880,40 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
     <div className="w-64 border-r border-neutral-800 bg-[#0f1116] flex">
       <div className="w-16 border-r border-neutral-800 py-4">
         <div className="flex flex-col items-center space-y-4">
-          <button
+          <SidebarMenuButton
+            icon={FileText}
+            active={activeSection === "text"}
             onClick={() => setActiveSection("text")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "text" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
           >
-            <FileText className="w-5 h-5" />
-          </button>
-          <button
+            Text
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Image}
+            active={activeSection === "image"}
             onClick={() => setActiveSection("image")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "image" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
           >
-            <Image className="w-5 h-5" />
-          </button>
-          <button
+            Image
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Shapes}
+            active={activeSection === "shapes"}
             onClick={() => setActiveSection("shapes")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "shapes" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
           >
-            <Shapes className="w-5 h-5" />
-          </button>
-          <button
+            Shapes
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Play}
+            active={activeSection === "animations"}
             onClick={() => setActiveSection("animations")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "animations" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
           >
-            <Play className="w-5 h-5" />
-          </button>
-          <button
+            Animations
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={FolderOpen}
+            active={activeSection === "projects"}
             onClick={() => setActiveSection("projects")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "projects" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
           >
-            <FolderOpen className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSection("uploads")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "uploads" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
-          >
-            <Upload className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSection("settings")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "settings" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSection("templates")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "templates" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
-          >
-            <Layout className="w-5 h-5" />
-          </button>
-          <button
-            onClick={() => setActiveSection("layers")}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg ${
-              activeSection === "layers" ? "bg-neutral-800" : "hover:bg-neutral-800/50"
-            }`}
-          >
-            <Layers className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
-      <div className="flex-1">
-        <div className="p-4 border-b border-neutral-800">
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold capitalize">{activeSection}</span>
-            <ChevronRight className="w-5 h-5 text-neutral-500" />
-          </div>
-        </div>
-        <div className="p-4">
-          {renderContent()}
-        </div>
-      </div>
-    </div>
-  );
-};
+            Projects
+          </SidebarMenuButton>
+          <SidebarMenuButton
+            icon={Upload}
