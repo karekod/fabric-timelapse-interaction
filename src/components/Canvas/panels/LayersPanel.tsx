@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Canvas } from 'fabric';
 import { ArrowUp, ArrowDown, EyeOff, Eye, Trash2 } from "lucide-react";
@@ -29,9 +30,12 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // Using moveUp instead of bringForward
+          // Get the target object's index
+          const targetIndex = canvas.getObjects().indexOf(targetObject);
+          
+          // Remove the current object and insert it at the target index
           canvas.remove(currentObject);
-          canvas.insertAt(currentObject, canvas.getObjects().indexOf(targetObject), false);
+          canvas.insertAt(currentObject, targetIndex, false);
           canvas.renderAll();
         }
       }
@@ -59,9 +63,12 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // Using moveDown instead of sendBackwards
+          // Get the target object's index and add 1 to place it below the target
+          const targetIndex = canvas.getObjects().indexOf(targetObject) + 1;
+          
+          // Remove the current object and insert it at the calculated index
           canvas.remove(currentObject);
-          canvas.insertAt(currentObject, canvas.getObjects().indexOf(targetObject) + 1, false);
+          canvas.insertAt(currentObject, targetIndex, false);
           canvas.renderAll();
         }
       }
