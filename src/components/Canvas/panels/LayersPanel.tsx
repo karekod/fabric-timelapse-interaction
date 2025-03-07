@@ -1,6 +1,5 @@
-
 import { useState } from 'react';
-import { Canvas } from 'fabric';
+import { Canvas, Object as FabricObject } from 'fabric';
 import { ArrowUp, ArrowDown, EyeOff, Eye, Trash2 } from "lucide-react";
 import { TimelineLayer } from "@/types/animation";
 
@@ -35,7 +34,15 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
           
           // Remove the current object and insert it at the target index
           canvas.remove(currentObject);
-          canvas.insertAt(currentObject, targetIndex, false);
+          // Using canvas.add() and moving the object to the correct position
+          canvas.add(currentObject);
+          // Now move the object to the correct position in the objects array
+          const objects = canvas.getObjects();
+          const currentIndex = objects.indexOf(currentObject);
+          if (currentIndex !== -1) {
+            objects.splice(currentIndex, 1);
+            objects.splice(targetIndex, 0, currentObject);
+          }
           canvas.renderAll();
         }
       }
@@ -68,7 +75,15 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
           
           // Remove the current object and insert it at the calculated index
           canvas.remove(currentObject);
-          canvas.insertAt(currentObject, targetIndex, false);
+          // Using canvas.add() and moving the object to the correct position
+          canvas.add(currentObject);
+          // Now move the object to the correct position in the objects array
+          const objects = canvas.getObjects();
+          const currentIndex = objects.indexOf(currentObject);
+          if (currentIndex !== -1 && targetIndex <= objects.length) {
+            objects.splice(currentIndex, 1);
+            objects.splice(targetIndex - 1, 0, currentObject);
+          }
           canvas.renderAll();
         }
       }
