@@ -29,7 +29,9 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          canvas.bringForward(currentObject);
+          // Using moveUp instead of bringForward
+          canvas.remove(currentObject);
+          canvas.insertAt(currentObject, canvas.getObjects().indexOf(targetObject), false);
           canvas.renderAll();
         }
       }
@@ -57,7 +59,9 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          canvas.sendBackwards(currentObject);
+          // Using moveDown instead of sendBackwards
+          canvas.remove(currentObject);
+          canvas.insertAt(currentObject, canvas.getObjects().indexOf(targetObject) + 1, false);
           canvas.renderAll();
         }
       }
