@@ -9,7 +9,7 @@ interface UseCanvasInitializationProps {
   canvasRef: RefObject<HTMLCanvasElement>;
   setCanvas: (canvas: FabricCanvas) => void;
   setSelectedObject: (object: ExtendedFabricObject | null) => void;
-  setTimelineLayers: (layers: TimelineLayer[]) => void;
+  setTimelineLayers: React.Dispatch<React.SetStateAction<TimelineLayer[]>>;
   timelineLayers: TimelineLayer[];
 }
 
@@ -120,7 +120,7 @@ export function useCanvasInitialization({
     // Listen for timeline layer updates from Sidebar
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'UPDATE_TIMELINE_LAYERS' && event.data.layers) {
-        setTimelineLayers(prev => [...prev, ...event.data.layers]);
+        setTimelineLayers(prevLayers => [...prevLayers, ...event.data.layers]);
       }
     };
 

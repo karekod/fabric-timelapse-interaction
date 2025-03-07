@@ -1,5 +1,5 @@
 
-import { AnimationPanel } from "./AnimationPanel";
+import { TimelineHeader } from "./Timeline/TimelineHeader";
 import { TimelineControl } from "./TimelineControl";
 import { Canvas as FabricCanvas } from "fabric";
 import { TimelineLayer } from "@/types/animation";
@@ -66,7 +66,7 @@ export const TimelineSection = ({
 
   return (
     <div className="border-t border-neutral-800 bg-[#0f1116]">
-      <AnimationPanel 
+      <TimelineHeader 
         isPlaying={isPlaying} 
         setIsPlaying={setIsPlaying}
         currentTime={currentTime}

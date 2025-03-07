@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Canvas } from 'fabric';
 import { ArrowUp, ArrowDown, EyeOff, Eye, Trash2 } from "lucide-react";
@@ -30,15 +29,8 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // For fabric.js v6, use moveObjectTo instead of bringForward
-          const currentIndex = objects.indexOf(currentObject);
-          const targetIndex = objects.indexOf(targetObject);
-          if (currentIndex !== -1 && targetIndex !== -1) {
-            // Swap positions in the canvas
-            canvas.remove(currentObject);
-            canvas.insertAt(currentObject, targetIndex);
-            canvas.renderAll();
-          }
+          canvas.bringForward(currentObject);
+          canvas.renderAll();
         }
       }
       
@@ -65,15 +57,8 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // For fabric.js v6, use moveObjectTo instead of sendBackwards
-          const currentIndex = objects.indexOf(currentObject);
-          const targetIndex = objects.indexOf(targetObject);
-          if (currentIndex !== -1 && targetIndex !== -1) {
-            // Swap positions in the canvas
-            canvas.remove(currentObject);
-            canvas.insertAt(currentObject, targetIndex);
-            canvas.renderAll();
-          }
+          canvas.sendBackwards(currentObject);
+          canvas.renderAll();
         }
       }
       

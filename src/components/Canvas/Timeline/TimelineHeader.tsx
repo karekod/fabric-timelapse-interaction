@@ -1,21 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Play, Pause, PlusCircle } from "lucide-react";
-import { TimelineLayer } from "@/types/animation";
 
-interface AnimationPanelProps {
+interface TimelineHeaderProps {
   isPlaying: boolean;
   setIsPlaying: (isPlaying: boolean) => void;
   currentTime: number;
   onAddTimeline?: () => void;
 }
 
-export const AnimationPanel = ({
+export const TimelineHeader = ({
   isPlaying,
   setIsPlaying,
   currentTime,
   onAddTimeline
-}: AnimationPanelProps) => {
+}: TimelineHeaderProps) => {
   return (
     <div className="p-4 flex items-center gap-4">
       <Button
