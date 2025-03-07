@@ -24,11 +24,16 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
       // Update canvas object order if possible
       if (canvas) {
         const objects = canvas.getObjects();
-        // Canvas rendering happens in reverse order, so we need to adjust
-        // To bring something visually "up", it needs to be moved later in array
-        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index].elementId) as any, index);
-        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index - 1].elementId) as any, index - 1);
-        canvas.renderAll();
+        // Find the objects that correspond to these layers
+        const currentObject = objects.find(obj => obj.customId === newLayers[index].elementId);
+        const targetObject = objects.find(obj => obj.customId === newLayers[index - 1].elementId);
+        
+        // If both objects exist, update their positions in the canvas
+        if (currentObject && targetObject) {
+          // Update object positions in the render stack by bringing one forward
+          canvas.bringForward(currentObject);
+          canvas.renderAll();
+        }
       }
       
       return newLayers;
@@ -48,10 +53,16 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
       // Update canvas object order if possible
       if (canvas) {
         const objects = canvas.getObjects();
-        // Canvas rendering happens in reverse order
-        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index].elementId) as any, index);
-        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index + 1].elementId) as any, index + 1);
-        canvas.renderAll();
+        // Find the objects that correspond to these layers
+        const currentObject = objects.find(obj => obj.customId === newLayers[index].elementId);
+        const targetObject = objects.find(obj => obj.customId === newLayers[index + 1].elementId);
+        
+        // If both objects exist, update their positions in the canvas
+        if (currentObject && targetObject) {
+          // Update object positions in the render stack by sending one backward
+          canvas.sendBackwards(currentObject);
+          canvas.renderAll();
+        }
       }
       
       return newLayers;
