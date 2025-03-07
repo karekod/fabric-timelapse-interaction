@@ -17,7 +17,7 @@ import { UploadsPanel } from "./panels/UploadsPanel";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { SettingsPanel } from "./panels/SettingsPanel";
 
-export const Sidebar = ({ canvas }: SidebarProps) => {
+export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: SidebarProps) => {
   const [activeSection, setActiveSection] = useState<MenuSection>("text");
 
   const renderContent = () => {
@@ -27,7 +27,11 @@ export const Sidebar = ({ canvas }: SidebarProps) => {
       case "shapes":
         return <ShapesPanel canvas={canvas} />;
       case "layers":
-        return <LayersPanel canvas={canvas} />;
+        return <LayersPanel 
+          canvas={canvas} 
+          timelineLayers={timelineLayers} 
+          setTimelineLayers={setTimelineLayers || (() => {})} 
+        />;
       case "image":
         return <ImagePanel canvas={canvas} />;
       case "animations":

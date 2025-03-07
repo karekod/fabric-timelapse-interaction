@@ -47,8 +47,11 @@ export interface Project {
 
 export interface SidebarProps {
   canvas: FabricCanvas | null;
+  timelineLayers?: TimelineLayer[];
+  setTimelineLayers?: React.Dispatch<React.SetStateAction<TimelineLayer[]>>;
 }
 
 export interface PanelProps {
   canvas: FabricCanvas | null;
 }
+

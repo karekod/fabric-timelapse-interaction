@@ -133,7 +133,11 @@ export const Canvas = () => {
     <div className="h-screen bg-[#0f1116] text-white flex">
       <div className="flex flex-col flex-1">
         <div className="flex-1 flex">
-          <Sidebar canvas={canvas} />
+          <Sidebar 
+            canvas={canvas} 
+            timelineLayers={timelineLayers} 
+            setTimelineLayers={setTimelineLayers} 
+          />
           <div className="flex-1 p-8 flex justify-center items-center">
             <div className="relative border border-neutral-800 rounded-lg overflow-hidden bg-[#171717] shadow-xl">
               <canvas ref={canvasRef} />
