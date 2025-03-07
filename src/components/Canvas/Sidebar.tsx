@@ -18,7 +18,11 @@ import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { SettingsPanel } from "./panels/SettingsPanel";
 
 export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: SidebarProps) => {
-  const [activeSection, setActiveSection] = useState<MenuSection>("text");
+  const [activeSection, setActiveSection] = useState<MenuSection>("layers"); // Set default to layers panel
+  
+  // This ensures the timelineLayers array is never undefined
+  const layers = timelineLayers || [];
+  const updateLayers = setTimelineLayers || (() => {});
 
   const renderContent = () => {
     switch (activeSection) {
@@ -29,8 +33,8 @@ export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: Side
       case "layers":
         return <LayersPanel 
           canvas={canvas} 
-          timelineLayers={timelineLayers} 
-          setTimelineLayers={setTimelineLayers || (() => {})} 
+          timelineLayers={layers} 
+          setTimelineLayers={updateLayers} 
         />;
       case "image":
         return <ImagePanel canvas={canvas} />;
@@ -47,7 +51,7 @@ export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: Side
       default:
         return (
           <div className="flex items-center justify-center h-full text-neutral-500">
-            Coming soon...
+            Yakında gelecek...
           </div>
         );
     }
@@ -58,32 +62,32 @@ export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: Side
       <div className="w-14 border-r border-neutral-800 py-2">
         <div className="flex flex-col items-center space-y-1">
           <SidebarMenuButton
+            icon={Layers}
+            active={activeSection === "layers"}
+            onClick={() => setActiveSection("layers")}
+          >
+            Katman
+          </SidebarMenuButton>
+          <SidebarMenuButton
             icon={FileText}
             active={activeSection === "text"}
             onClick={() => setActiveSection("text")}
           >
-            Text
+            Metin
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Image}
             active={activeSection === "image"}
             onClick={() => setActiveSection("image")}
           >
-            Image
+            Resim
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Shapes}
             active={activeSection === "shapes"}
             onClick={() => setActiveSection("shapes")}
           >
-            Shapes
-          </SidebarMenuButton>
-          <SidebarMenuButton
-            icon={Layers}
-            active={activeSection === "layers"}
-            onClick={() => setActiveSection("layers")}
-          >
-            Layers
+            Şekil
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Play}
@@ -97,28 +101,28 @@ export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: Side
             active={activeSection === "projects"}
             onClick={() => setActiveSection("projects")}
           >
-            Proj
+            Proje
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Upload}
             active={activeSection === "uploads"}
             onClick={() => setActiveSection("uploads")}
           >
-            Upload
+            Yükle
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Layout}
             active={activeSection === "templates"}
             onClick={() => setActiveSection("templates")}
           >
-            Temp
+            Şablon
           </SidebarMenuButton>
           <SidebarMenuButton
             icon={Settings}
             active={activeSection === "settings"}
             onClick={() => setActiveSection("settings")}
           >
-            Settings
+            Ayarlar
           </SidebarMenuButton>
         </div>
       </div>

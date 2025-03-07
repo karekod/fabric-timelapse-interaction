@@ -7,6 +7,7 @@ import { Sidebar } from "./Sidebar";
 import { PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TimelineLayer, Keyframe } from "@/types/animation";
+import { toast } from "sonner";
 
 interface ExtendedFabricObject extends FabricObject {
   customId?: string;
@@ -21,16 +22,26 @@ export const Canvas = () => {
   const [timelineLayers, setTimelineLayers] = useState<TimelineLayer[]>([]);
 
   const handleAddTimeline = () => {
-    if (!selectedObject || !selectedObject.customId) return;
+    if (!selectedObject || !selectedObject.customId) {
+      toast("Lütfen önce bir nesne seçin", { 
+        description: "Bir katman eklemek için önce tuval üzerinde bir nesne seçin",
+        duration: 3000
+      });
+      return;
+    }
 
     // Check if this object already has a timeline
     const existingLayer = timelineLayers.find(layer => layer.elementId === selectedObject.customId);
-    if (existingLayer) return;
+    if (existingLayer) {
+      toast("Bu nesne için zaten bir katman var", { duration: 3000 });
+      return;
+    }
 
     const newLayer: TimelineLayer = {
       id: crypto.randomUUID(),
       elementId: selectedObject.customId,
-      name: selectedObject.type || 'Element',
+      name: selectedObject.type === 'i-text' ? 'Metin' : selectedObject.type || 'Nesne',
+      isVisible: true,
       keyframes: [{
         id: crypto.randomUUID(),
         startTime: 0,
@@ -41,6 +52,10 @@ export const Canvas = () => {
     };
 
     setTimelineLayers(prev => [...prev, newLayer]);
+    toast("Yeni katman eklendi", { 
+      description: `${newLayer.name} katmanı başarıyla eklendi`, 
+      duration: 3000 
+    });
   };
 
   useEffect(() => {
@@ -53,7 +68,7 @@ export const Canvas = () => {
     });
 
     // Add welcome text
-    const welcomeText = new IText("Welcome to Canvas Animation", {
+    const welcomeText = new IText("Canvas Animation'a Hoş Geldiniz", {
       left: fabricCanvas.width! / 2,
       top: fabricCanvas.height! / 2,
       originX: 'center',
@@ -64,6 +79,22 @@ export const Canvas = () => {
     });
     welcomeText.customId = crypto.randomUUID();
     fabricCanvas.add(welcomeText);
+
+    // Create an initial layer for the welcome text
+    const initialLayer: TimelineLayer = {
+      id: crypto.randomUUID(),
+      elementId: welcomeText.customId!,
+      name: 'Karşılama Metni',
+      isVisible: true,
+      keyframes: [{
+        id: crypto.randomUUID(),
+        startTime: 0,
+        duration: 20,
+        animationType: 'move',
+        properties: {},
+      }],
+    };
+    setTimelineLayers([initialLayer]);
 
     fabricCanvas.on("selection:created", (e) => {
       const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
@@ -83,6 +114,35 @@ export const Canvas = () => {
 
     fabricCanvas.on("selection:cleared", () => {
       setSelectedObject(null);
+    });
+
+    // When new objects are added to canvas, automatically create a layer for them
+    fabricCanvas.on("object:added", (e) => {
+      const addedObj = e.target as ExtendedFabricObject;
+      if (!addedObj || addedObj === welcomeText) return;
+      
+      if (!addedObj.customId) {
+        addedObj.customId = crypto.randomUUID();
+      }
+      
+      // Check if there's already a layer for this object
+      const existingLayer = timelineLayers.find(layer => layer.elementId === addedObj.customId);
+      if (!existingLayer) {
+        const newLayer: TimelineLayer = {
+          id: crypto.randomUUID(),
+          elementId: addedObj.customId,
+          name: addedObj.type === 'i-text' ? 'Metin' : addedObj.type || 'Nesne',
+          isVisible: true,
+          keyframes: [{
+            id: crypto.randomUUID(),
+            startTime: 0,
+            duration: 20,
+            animationType: 'move',
+            properties: {},
+          }],
+        };
+        setTimelineLayers(prev => [...prev, newLayer]);
+      }
     });
 
     setCanvas(fabricCanvas);

@@ -21,6 +21,16 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
       newLayers[index] = newLayers[index - 1];
       newLayers[index - 1] = temp;
       
+      // Update canvas object order if possible
+      if (canvas) {
+        const objects = canvas.getObjects();
+        // Canvas rendering happens in reverse order, so we need to adjust
+        // To bring something visually "up", it needs to be moved later in array
+        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index].elementId) as any, index);
+        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index - 1].elementId) as any, index - 1);
+        canvas.renderAll();
+      }
+      
       return newLayers;
     });
   };
@@ -35,6 +45,15 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
       newLayers[index] = newLayers[index + 1];
       newLayers[index + 1] = temp;
       
+      // Update canvas object order if possible
+      if (canvas) {
+        const objects = canvas.getObjects();
+        // Canvas rendering happens in reverse order
+        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index].elementId) as any, index);
+        canvas.moveTo(objects.find(obj => obj.customId === newLayers[index + 1].elementId) as any, index + 1);
+        canvas.renderAll();
+      }
+      
       return newLayers;
     });
   };
@@ -42,7 +61,7 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
   const toggleLayerVisibility = (layerId: string) => {
     setTimelineLayers(prev => prev.map(layer => {
       if (layer.id === layerId) {
-        const isVisible = !layer.isVisible;
+        const isVisible = layer.isVisible === false ? true : false;
         
         if (canvas) {
           const objects = canvas.getObjects();
@@ -76,53 +95,54 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
 
   return (
     <div className="space-y-2">
-      <div className="text-xs font-semibold text-neutral-300 mb-2 border-b border-neutral-700 pb-1">LAYERS</div>
+      <div className="text-xs font-semibold text-neutral-300 mb-2 border-b border-neutral-700 pb-1">KATMANLAR</div>
       <div className="space-y-1.5">
-        {timelineLayers.map((layer) => (
-          <div 
-            key={layer.id}
-            className="flex items-center justify-between bg-neutral-800/60 hover:bg-neutral-800 p-1.5 rounded-md group transition-colors"
-          >
-            <span className="text-xs truncate flex-1 pl-1">{layer.name}</span>
-            <div className="flex gap-0.5">
-              <button
-                onClick={() => toggleLayerVisibility(layer.id)}
-                className="p-1 hover:bg-neutral-700 rounded"
-                title={layer.isVisible === false ? "Show layer" : "Hide layer"}
-              >
-                {layer.isVisible === false ? (
-                  <EyeOff className="w-3.5 h-3.5" />
-                ) : (
-                  <Eye className="w-3.5 h-3.5" />
-                )}
-              </button>
-              <button
-                onClick={() => moveLayerUp(layer.id)}
-                className="p-1 hover:bg-neutral-700 rounded"
-                title="Move up"
-              >
-                <ArrowUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => moveLayerDown(layer.id)}
-                className="p-1 hover:bg-neutral-700 rounded"
-                title="Move down"
-              >
-                <ArrowDown className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => deleteLayer(layer.id)}
-                className="p-1 hover:bg-neutral-700 rounded text-red-400"
-                title="Delete layer"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
+        {timelineLayers && timelineLayers.length > 0 ? (
+          timelineLayers.map((layer) => (
+            <div 
+              key={layer.id}
+              className="flex items-center justify-between bg-neutral-800/60 hover:bg-neutral-800 p-1.5 rounded-md group transition-colors"
+            >
+              <span className="text-xs truncate flex-1 pl-1">{layer.name}</span>
+              <div className="flex gap-0.5">
+                <button
+                  onClick={() => toggleLayerVisibility(layer.id)}
+                  className="p-1 hover:bg-neutral-700 rounded"
+                  title={layer.isVisible === false ? "Katmanı göster" : "Katmanı gizle"}
+                >
+                  {layer.isVisible === false ? (
+                    <EyeOff className="w-3.5 h-3.5" />
+                  ) : (
+                    <Eye className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                <button
+                  onClick={() => moveLayerUp(layer.id)}
+                  className="p-1 hover:bg-neutral-700 rounded"
+                  title="Yukarı taşı"
+                >
+                  <ArrowUp className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => moveLayerDown(layer.id)}
+                  className="p-1 hover:bg-neutral-700 rounded"
+                  title="Aşağı taşı"
+                >
+                  <ArrowDown className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => deleteLayer(layer.id)}
+                  className="p-1 hover:bg-neutral-700 rounded text-red-400"
+                  title="Katmanı sil"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
-        {timelineLayers.length === 0 && (
-          <div className="text-center text-neutral-500 text-xs py-2 bg-neutral-800/20 rounded-md">
-            No layers available
+          ))
+        ) : (
+          <div className="text-center text-neutral-500 text-xs py-4 px-2 bg-neutral-800/20 rounded-md">
+            Henüz katman yok. Tuval üzerinde bir öğe oluşturun ve seçin.
           </div>
         )}
       </div>
