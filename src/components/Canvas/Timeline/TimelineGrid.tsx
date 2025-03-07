@@ -28,7 +28,7 @@ export const TimelineGrid = ({
         <div className="border-t border-b border-neutral-800">
           <div className="relative" style={{ height: `${timelineLayers.length * 40}px` }}>
             <div
-              className="absolute top-0 bottom-0 w-px bg-blue-500 transition-all duration-100"
+              className="absolute top-0 bottom-0 w-0.5 bg-blue-500 z-10"
               style={{ left: `${currentTime}%` }}
             />
 

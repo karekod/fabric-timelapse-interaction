@@ -17,7 +17,7 @@ export function useTimelineAnimation({
 
     const animate = () => {
       if (isPlaying) {
-        setCurrentTime((currentTime >= 100 ? 0 : currentTime + 0.5));
+        setCurrentTime((currentTime >= 100 ? 0 : currentTime + 0.2));
         animationFrame = requestAnimationFrame(animate);
       }
     };

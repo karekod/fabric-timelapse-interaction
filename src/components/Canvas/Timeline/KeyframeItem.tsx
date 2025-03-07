@@ -17,8 +17,10 @@ interface KeyframeItemProps {
   layerIndex: number;
   layerIsVisible: boolean;
   isDragging: boolean;
+  isSelected?: boolean;
   onDragStart: (e: React.MouseEvent, keyframeId: string, type: "keyframe" | "duration" | "startTime") => void;
   changeAnimationType: (keyframeId: string, newType: Keyframe['animationType']) => void;
+  onKeyframeSelect?: (keyframeId: string) => void;
 }
 
 export const KeyframeItem = ({
@@ -26,8 +28,10 @@ export const KeyframeItem = ({
   layerIndex,
   layerIsVisible,
   isDragging,
+  isSelected = false,
   onDragStart,
-  changeAnimationType
+  changeAnimationType,
+  onKeyframeSelect
 }: KeyframeItemProps) => {
   
   const getAnimationTypeIcon = (type: Keyframe['animationType']) => {
@@ -43,6 +47,16 @@ export const KeyframeItem = ({
     }
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onKeyframeSelect) {
+      onKeyframeSelect(keyframe.id);
+    }
+  };
+
+  // Count number of effects if present
+  const effectsCount = keyframe.effects?.length || 0;
+
   return (
     <div
       className="absolute h-8 mt-1 flex items-center group cursor-move"
@@ -52,11 +66,13 @@ export const KeyframeItem = ({
         top: `${layerIndex * 40}px`,
       }}
       onMouseDown={e => onDragStart(e, keyframe.id, "keyframe")}
+      onClick={handleClick}
     >
       <div 
         className={`
-          bg-black border border-blue-500 rounded-md w-full h-full 
+          bg-black border rounded-md w-full h-full 
           flex items-center group-hover:border-blue-400
+          ${isSelected ? 'border-blue-500' : 'border-blue-300/70'}
           ${isDragging ? 'border-blue-400' : ''}
           ${layerIsVisible === false ? 'opacity-50' : ''}
         `}
@@ -105,6 +121,7 @@ export const KeyframeItem = ({
           </DropdownMenu>
           <span className="text-xs font-medium text-white">
             {keyframe.startTime.toFixed(1)}s - {(keyframe.startTime + keyframe.duration).toFixed(1)}s
+            {effectsCount > 0 && ` (${effectsCount})`}
           </span>
         </div>
         <div

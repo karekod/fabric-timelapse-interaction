@@ -5,6 +5,7 @@ import { TimelineLayers } from "./Timeline/TimelineLayers";
 import { TimelineGrid } from "./Timeline/TimelineGrid";
 import { useTimelineAnimation } from "@/hooks/useTimelineAnimation";
 import { useTimelineDrag } from "@/hooks/useTimelineDrag";
+import { useState } from "react";
 
 interface TimelineControlProps {
   currentTime: number;
@@ -13,6 +14,8 @@ interface TimelineControlProps {
   timelineLayers: TimelineLayer[];
   setTimelineLayers: (layers: TimelineLayer[]) => void;
   canvas: any;
+  selectedKeyframeId?: string;
+  setSelectedKeyframeId?: (id: string | null) => void;
 }
 
 export const TimelineControl = ({
@@ -21,8 +24,24 @@ export const TimelineControl = ({
   isPlaying,
   timelineLayers,
   setTimelineLayers,
-  canvas
+  canvas,
+  selectedKeyframeId,
+  setSelectedKeyframeId
 }: TimelineControlProps) => {
+  const [localSelectedKeyframeId, setLocalSelectedKeyframeId] = useState<string | null>(null);
+  
+  // Use the passed setter if available, otherwise use local state
+  const handleKeyframeSelect = (keyframeId: string) => {
+    if (setSelectedKeyframeId) {
+      setSelectedKeyframeId(keyframeId);
+    } else {
+      setLocalSelectedKeyframeId(keyframeId);
+    }
+  };
+  
+  // Use the passed value if available, otherwise use local state
+  const effectiveSelectedKeyframeId = selectedKeyframeId || localSelectedKeyframeId;
+
   // Use the animation hook
   useTimelineAnimation({
     isPlaying,
@@ -91,7 +110,11 @@ export const TimelineControl = ({
       name: `${layerToDuplicate.name} (copy)`,
       keyframes: layerToDuplicate.keyframes.map(keyframe => ({
         ...keyframe,
-        id: crypto.randomUUID()
+        id: crypto.randomUUID(),
+        effects: keyframe.effects ? keyframe.effects.map(effect => ({
+          ...effect,
+          id: crypto.randomUUID()
+        })) : []
       }))
     };
 

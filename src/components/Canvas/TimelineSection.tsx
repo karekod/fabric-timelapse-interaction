@@ -1,10 +1,12 @@
 
+import { useState } from "react";
 import { TimelineHeader } from "./Timeline/TimelineHeader";
 import { TimelineControl } from "./TimelineControl";
 import { Canvas as FabricCanvas } from "fabric";
 import { TimelineLayer } from "@/types/animation";
 import { toast } from "sonner";
 import { ExtendedFabricObject } from "@/hooks/useCanvasState";
+import { AnimationsPanel } from "./panels/AnimationsPanel";
 
 interface TimelineSectionProps {
   isPlaying: boolean;
@@ -27,6 +29,8 @@ export const TimelineSection = ({
   canvas,
   selectedObject
 }: TimelineSectionProps) => {
+  const [selectedKeyframeId, setSelectedKeyframeId] = useState<string | null>(null);
+
   const handleAddTimeline = () => {
     if (!selectedObject || !selectedObject.customId) {
       toast("Lütfen önce bir nesne seçin", { 
@@ -54,6 +58,7 @@ export const TimelineSection = ({
         duration: 20,
         animationType: 'move',
         properties: {},
+        effects: []
       }],
     };
 
@@ -79,6 +84,8 @@ export const TimelineSection = ({
         timelineLayers={timelineLayers}
         setTimelineLayers={setTimelineLayers}
         canvas={canvas}
+        selectedKeyframeId={selectedKeyframeId}
+        setSelectedKeyframeId={setSelectedKeyframeId}
       />
     </div>
   );
