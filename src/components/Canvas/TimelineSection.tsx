@@ -1,0 +1,85 @@
+
+import { AnimationPanel } from "./AnimationPanel";
+import { TimelineControl } from "./TimelineControl";
+import { Canvas as FabricCanvas } from "fabric";
+import { TimelineLayer } from "@/types/animation";
+import { toast } from "sonner";
+import { ExtendedFabricObject } from "@/hooks/useCanvasState";
+
+interface TimelineSectionProps {
+  isPlaying: boolean;
+  setIsPlaying: (isPlaying: boolean) => void;
+  currentTime: number;
+  setCurrentTime: (time: number) => void;
+  timelineLayers: TimelineLayer[];
+  setTimelineLayers: React.Dispatch<React.SetStateAction<TimelineLayer[]>>;
+  canvas: FabricCanvas | null;
+  selectedObject: ExtendedFabricObject | null;
+}
+
+export const TimelineSection = ({
+  isPlaying,
+  setIsPlaying,
+  currentTime,
+  setCurrentTime,
+  timelineLayers,
+  setTimelineLayers,
+  canvas,
+  selectedObject
+}: TimelineSectionProps) => {
+  const handleAddTimeline = () => {
+    if (!selectedObject || !selectedObject.customId) {
+      toast("Lütfen önce bir nesne seçin", { 
+        description: "Bir katman eklemek için önce tuval üzerinde bir nesne seçin",
+        duration: 3000
+      });
+      return;
+    }
+
+    // Check if this object already has a timeline
+    const existingLayer = timelineLayers.find(layer => layer.elementId === selectedObject.customId);
+    if (existingLayer) {
+      toast("Bu nesne için zaten bir katman var", { duration: 3000 });
+      return;
+    }
+
+    const newLayer: TimelineLayer = {
+      id: crypto.randomUUID(),
+      elementId: selectedObject.customId,
+      name: selectedObject.type === 'i-text' ? 'Metin' : selectedObject.type || 'Nesne',
+      isVisible: true,
+      keyframes: [{
+        id: crypto.randomUUID(),
+        startTime: 0,
+        duration: 20,
+        animationType: 'move',
+        properties: {},
+      }],
+    };
+
+    setTimelineLayers(prev => [...prev, newLayer]);
+    toast("Yeni katman eklendi", { 
+      description: `${newLayer.name} katmanı başarıyla eklendi`, 
+      duration: 3000 
+    });
+  };
+
+  return (
+    <div className="border-t border-neutral-800 bg-[#0f1116]">
+      <AnimationPanel 
+        isPlaying={isPlaying} 
+        setIsPlaying={setIsPlaying}
+        currentTime={currentTime}
+        onAddTimeline={handleAddTimeline}
+      />
+      <TimelineControl
+        currentTime={currentTime}
+        setCurrentTime={setCurrentTime}
+        isPlaying={isPlaying}
+        timelineLayers={timelineLayers}
+        setTimelineLayers={setTimelineLayers}
+        canvas={canvas}
+      />
+    </div>
+  );
+};

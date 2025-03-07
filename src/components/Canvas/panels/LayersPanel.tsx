@@ -30,9 +30,15 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // Update object positions in the render stack by bringing one forward
-          canvas.bringForward(currentObject);
-          canvas.renderAll();
+          // For fabric.js v6, use moveObjectTo instead of bringForward
+          const currentIndex = objects.indexOf(currentObject);
+          const targetIndex = objects.indexOf(targetObject);
+          if (currentIndex !== -1 && targetIndex !== -1) {
+            // Swap positions in the canvas
+            canvas.remove(currentObject);
+            canvas.insertAt(currentObject, targetIndex);
+            canvas.renderAll();
+          }
         }
       }
       
@@ -59,9 +65,15 @@ export const LayersPanel = ({ canvas, timelineLayers, setTimelineLayers }: Layer
         
         // If both objects exist, update their positions in the canvas
         if (currentObject && targetObject) {
-          // Update object positions in the render stack by sending one backward
-          canvas.sendBackwards(currentObject);
-          canvas.renderAll();
+          // For fabric.js v6, use moveObjectTo instead of sendBackwards
+          const currentIndex = objects.indexOf(currentObject);
+          const targetIndex = objects.indexOf(targetObject);
+          if (currentIndex !== -1 && targetIndex !== -1) {
+            // Swap positions in the canvas
+            canvas.remove(currentObject);
+            canvas.insertAt(currentObject, targetIndex);
+            canvas.renderAll();
+          }
         }
       }
       
