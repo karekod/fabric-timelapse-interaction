@@ -47,6 +47,9 @@ export const TimelineSection = ({
       return;
     }
 
+    // Use the current blue marker position (currentTime) as the starting point for the new keyframe
+    const startTime = currentTime;
+    
     const newLayer: TimelineLayer = {
       id: crypto.randomUUID(),
       elementId: selectedObject.customId,
@@ -54,7 +57,7 @@ export const TimelineSection = ({
       isVisible: true,
       keyframes: [{
         id: crypto.randomUUID(),
-        startTime: 0,
+        startTime: startTime, // Set the keyframe to start at the current timeline position
         duration: 20,
         animationType: 'move',
         properties: {},
@@ -64,7 +67,7 @@ export const TimelineSection = ({
 
     setTimelineLayers(prev => [...prev, newLayer]);
     toast("Yeni katman eklendi", { 
-      description: `${newLayer.name} katmanı başarıyla eklendi`, 
+      description: `${newLayer.name} katmanı ${startTime > 0 ? startTime + 's konumunda' : 'başlangıçta'} başarıyla eklendi`, 
       duration: 3000 
     });
   };

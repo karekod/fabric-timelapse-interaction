@@ -54,7 +54,7 @@ export function useCanvasInitialization({
         duration: 20,
         animationType: 'move',
         properties: {},
-        effects: [], // Add the required effects array
+        effects: [],
       }],
     };
     setTimelineLayers([initialLayer]);
@@ -79,7 +79,7 @@ export function useCanvasInitialization({
       setSelectedObject(null);
     });
 
-    // When new objects are added to canvas, automatically create a layer for them
+    // When new objects are added to canvas, make sure they have a customId but don't create timeline layers automatically
     fabricCanvas.on("object:added", (e) => {
       const addedObj = e.target as ExtendedFabricObject;
       if (!addedObj || addedObj === welcomeText) return;
@@ -88,25 +88,8 @@ export function useCanvasInitialization({
         addedObj.customId = crypto.randomUUID();
       }
       
-      // Check if there's already a layer for this object
-      const existingLayer = timelineLayers.find(layer => layer.elementId === addedObj.customId);
-      if (!existingLayer) {
-        const newLayer: TimelineLayer = {
-          id: crypto.randomUUID(),
-          elementId: addedObj.customId,
-          name: addedObj.type === 'i-text' ? 'Metin' : addedObj.type || 'Nesne',
-          isVisible: true,
-          keyframes: [{
-            id: crypto.randomUUID(),
-            startTime: 0,
-            duration: 20,
-            animationType: 'move',
-            properties: {},
-            effects: [], // Add the required effects array
-          }],
-        };
-        setTimelineLayers(prev => [...prev, newLayer]);
-      }
+      // We no longer automatically create timeline layers for new objects
+      // The user will use the "Add Timeline" button to create a timeline layer
     });
 
     setCanvas(fabricCanvas);

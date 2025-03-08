@@ -30,12 +30,12 @@ export const TimelineHeader = ({
       </Button>
       <Button
         size="sm"
-        variant="ghost"
-        className="flex items-center gap-2"
+        variant="outline"
+        className="flex items-center gap-2 bg-blue-600/20 hover:bg-blue-600/30 border-blue-600/50"
         onClick={onAddTimeline}
       >
         <PlusCircle className="h-4 w-4" />
-        Add Timeline
+        <span>Seçilen nesne için {currentTime > 0 ? `${currentTime.toFixed(1)}s'de` : 'başlangıçta'} timeline ekle</span>
       </Button>
       <div className="text-sm text-neutral-400">
         {currentTime.toFixed(1)}s
