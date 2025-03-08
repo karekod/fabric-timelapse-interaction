@@ -37,7 +37,8 @@ export const Canvas = () => {
           <Sidebar 
             canvas={canvas} 
             timelineLayers={timelineLayers} 
-            setTimelineLayers={setTimelineLayers} 
+            setTimelineLayers={setTimelineLayers}
+            selectedObject={selectedObject}
           />
           <CanvasArea canvasRef={canvasRef} />
         </div>

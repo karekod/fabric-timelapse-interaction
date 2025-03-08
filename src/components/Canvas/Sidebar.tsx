@@ -17,7 +17,7 @@ import { UploadsPanel } from "./panels/UploadsPanel";
 import { TemplatesPanel } from "./panels/TemplatesPanel";
 import { SettingsPanel } from "./panels/SettingsPanel";
 
-export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: SidebarProps) => {
+export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers, selectedObject = null }: SidebarProps) => {
   const [activeSection, setActiveSection] = useState<MenuSection>("layers"); // Set default to layers panel
   
   // This ensures the timelineLayers array is never undefined
@@ -39,7 +39,12 @@ export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers }: Side
       case "image":
         return <ImagePanel canvas={canvas} />;
       case "animations":
-        return <AnimationsPanel canvas={canvas} />;
+        return <AnimationsPanel 
+          canvas={canvas} 
+          selectedObject={selectedObject} 
+          timelineLayers={layers} 
+          setTimelineLayers={updateLayers} 
+        />;
       case "uploads":
         return <UploadsPanel canvas={canvas} />;
       case "projects":

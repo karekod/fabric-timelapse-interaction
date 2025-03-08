@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { PanelProps } from "@/types/sidebar";
 import { Input } from "@/components/ui/input";
@@ -196,7 +195,6 @@ export const AnimationsPanel = ({ canvas, selectedObject, timelineLayers, setTim
                             id={`enable-${effect.id}`}
                             checked={effect.isEnabled}
                             onCheckedChange={() => toggleEffectEnabled(effect.id)}
-                            size="sm"
                           />
                           <Label htmlFor={`enable-${effect.id}`} className="text-xs">Active</Label>
                         </div>

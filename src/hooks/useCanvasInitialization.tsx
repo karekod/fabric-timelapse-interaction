@@ -54,6 +54,7 @@ export function useCanvasInitialization({
         duration: 20,
         animationType: 'move',
         properties: {},
+        effects: [], // Add the required effects array
       }],
     };
     setTimelineLayers([initialLayer]);
@@ -101,6 +102,7 @@ export function useCanvasInitialization({
             duration: 20,
             animationType: 'move',
             properties: {},
+            effects: [], // Add the required effects array
           }],
         };
         setTimelineLayers(prev => [...prev, newLayer]);
