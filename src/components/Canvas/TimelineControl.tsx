@@ -154,14 +154,15 @@ export const TimelineControl = ({
         changeAnimationType={changeAnimationType}
       />
 
-      <Slider
-        value={[currentTime]}
-        min={0}
-        max={100}
-        step={0.1}
-        onValueChange={(value) => setCurrentTime(value[0])}
-        className="mt-4 absolute bottom-4 left-52 right-4"
-      />
+      <div className="mt-4 absolute bottom-4 left-52 right-4 opacity-30 hover:opacity-100 transition-opacity">
+        <Slider
+          value={[currentTime]}
+          min={0}
+          max={100}
+          step={0.1}
+          onValueChange={(value) => setCurrentTime(value[0])}
+        />
+      </div>
     </div>
   );
 };
