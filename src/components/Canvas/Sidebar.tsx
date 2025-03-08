@@ -14,7 +14,7 @@ import { ImagePanel } from "./panels/ImagePanel";
 import { AnimationsPanel } from "./panels/AnimationsPanel";
 import { ProjectsPanel } from "./panels/ProjectsPanel";
 import { UploadsPanel } from "./panels/UploadsPanel";
-import { TemplatesPanel } from "./panels/TemplatesPanel";
+import { TemplatesPanel } from "./panels/Templates/TemplatesPanel";
 import { SettingsPanel } from "./panels/SettingsPanel";
 
 export const Sidebar = ({ canvas, timelineLayers = [], setTimelineLayers, selectedObject = null }: SidebarProps) => {
