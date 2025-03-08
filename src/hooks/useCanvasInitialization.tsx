@@ -1,6 +1,6 @@
 
 import { useEffect, RefObject } from "react";
-import { Canvas as FabricCanvas, IText } from "fabric";
+import { Canvas as FabricCanvas } from "fabric";
 import { TimelineLayer } from "@/types/animation";
 import { ExtendedFabricObject } from "./useCanvasState";
 import { toast } from "sonner";
@@ -29,35 +29,9 @@ export function useCanvasInitialization({
       backgroundColor: "#0f1116",
     });
 
-    // Add welcome text
-    const welcomeText = new IText("Canvas Animation'a Hoş Geldiniz", {
-      left: fabricCanvas.width! / 2,
-      top: fabricCanvas.height! / 2,
-      originX: 'center',
-      originY: 'center',
-      fill: "#ffffff",
-      fontSize: 24,
-      fontWeight: "bold"
-    });
-    welcomeText.customId = crypto.randomUUID();
-    fabricCanvas.add(welcomeText);
+    // Initialize with an empty canvas - no welcome text
 
-    // Create an initial layer for the welcome text
-    const initialLayer: TimelineLayer = {
-      id: crypto.randomUUID(),
-      elementId: welcomeText.customId!,
-      name: 'Karşılama Metni',
-      isVisible: true,
-      keyframes: [{
-        id: crypto.randomUUID(),
-        startTime: 0,
-        duration: 20,
-        animationType: 'move',
-        properties: {},
-        effects: [],
-      }],
-    };
-    setTimelineLayers([initialLayer]);
+    setTimelineLayers([]); // Start with empty timeline layers
 
     fabricCanvas.on("selection:created", (e) => {
       const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;
@@ -82,7 +56,7 @@ export function useCanvasInitialization({
     // When new objects are added to canvas, make sure they have a customId but don't create timeline layers automatically
     fabricCanvas.on("object:added", (e) => {
       const addedObj = e.target as ExtendedFabricObject;
-      if (!addedObj || addedObj === welcomeText) return;
+      if (!addedObj) return;
       
       if (!addedObj.customId) {
         addedObj.customId = crypto.randomUUID();
