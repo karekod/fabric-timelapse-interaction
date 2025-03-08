@@ -19,11 +19,11 @@ export const TimelineLayers = ({
   onDragStart
 }: TimelineLayersProps) => {
   return (
-    <div className="w-48 border-r border-neutral-800 pr-4 space-y-2">
+    <div className="w-48 border-r border-neutral-800 pr-4">
       {timelineLayers.map(layer => (
         <div
           key={layer.id}
-          className="h-10 flex items-center justify-between group"
+          className="h-10 flex items-center justify-between group border-b border-neutral-800 last:border-b-0"
         >
           <div 
             className="flex items-center gap-2 flex-1"

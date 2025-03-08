@@ -133,26 +133,28 @@ export const TimelineControl = ({
   };
 
   return (
-    <div className="bg-[#0f1116] p-4 select-none flex"
+    <div className="bg-[#0f1116] p-4 select-none flex flex-col"
       onMouseMove={e => draggingItem && handleDragMove(e)}
       onMouseUp={handleDragEnd}
       onMouseLeave={handleDragEnd}
     >
-      <TimelineLayers
-        timelineLayers={timelineLayers}
-        toggleLayerVisibility={toggleLayerVisibility}
-        deleteLayer={deleteLayer}
-        duplicateLayer={duplicateLayer}
-        onDragStart={handleDragStart}
-      />
+      <div className="flex">
+        <TimelineLayers
+          timelineLayers={timelineLayers}
+          toggleLayerVisibility={toggleLayerVisibility}
+          deleteLayer={deleteLayer}
+          duplicateLayer={duplicateLayer}
+          onDragStart={handleDragStart}
+        />
 
-      <TimelineGrid
-        timelineLayers={timelineLayers}
-        currentTime={currentTime}
-        draggingItem={draggingItem}
-        handleDragStart={handleDragStart}
-        changeAnimationType={changeAnimationType}
-      />
+        <TimelineGrid
+          timelineLayers={timelineLayers}
+          currentTime={currentTime}
+          draggingItem={draggingItem}
+          handleDragStart={handleDragStart}
+          changeAnimationType={changeAnimationType}
+        />
+      </div>
 
       <div className="mt-4 absolute bottom-4 left-52 right-4 opacity-30 hover:opacity-100 transition-opacity">
         <Slider

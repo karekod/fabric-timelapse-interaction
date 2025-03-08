@@ -25,7 +25,7 @@ export const TimelineGrid = ({
             <span key={i}>{i}s</span>
           ))}
         </div>
-        <div className="border-t border-b border-neutral-800">
+        <div className="border-t border-neutral-800">
           <div className="relative" style={{ height: `${timelineLayers.length * 40}px` }}>
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-blue-500 z-10"
