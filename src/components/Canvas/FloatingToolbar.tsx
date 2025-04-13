@@ -36,28 +36,29 @@ export const FloatingToolbar = ({ canvas, selectedObject }: FloatingToolbarProps
     canvas.on("object:moving", updatePosition);
     canvas.on("object:scaling", updatePosition);
     canvas.on("object:rotating", updatePosition);
-    canvas.on("zoom:changed", updatePosition);
+    canvas.on("zoom", updatePosition); // Changed from "zoom:changed" to "zoom"
     
     return () => {
       canvas.off("object:moving", updatePosition);
       canvas.off("object:scaling", updatePosition);
       canvas.off("object:rotating", updatePosition);
-      canvas.off("zoom:changed", updatePosition);
+      canvas.off("zoom", updatePosition); // Changed from "zoom:changed" to "zoom"
     };
   }, [canvas, selectedObject]);
   
   const handleCopy = () => {
     if (!canvas || !selectedObject) return;
     
-    selectedObject.clone((cloned: ExtendedFabricObject) => {
-      cloned.set({
+    // Fixed the clone method usage to match Fabric.js v6 API
+    selectedObject.clone((clonedObj: ExtendedFabricObject) => {
+      clonedObj.set({
         left: (selectedObject.left || 0) + 20,
         top: (selectedObject.top || 0) + 20,
         customId: crypto.randomUUID(),
       });
       
-      canvas.add(cloned);
-      canvas.setActiveObject(cloned);
+      canvas.add(clonedObj);
+      canvas.setActiveObject(clonedObj);
       canvas.renderAll();
       toast.success("Öğe kopyalandı");
     });
