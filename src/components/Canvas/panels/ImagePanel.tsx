@@ -1,17 +1,28 @@
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Canvas as FabricCanvas, Image as FabricImage } from "fabric";
 import { Button } from "@/components/ui/button";
 import { PanelProps } from "@/types/sidebar";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
-import { useRef } from "react";
+import { Upload, Filter } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export const ImagePanel = ({ canvas }: PanelProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedImages, setUploadedImages] = useState<{id: string, src: string}[]>([]);
   const [selectedUploadedImage, setSelectedUploadedImage] = useState<string | null>(null);
-
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Filter states
+  const [brightness, setBrightness] = useState(0);
+  const [contrast, setContrast] = useState(0);
+  const [saturation, setSaturation] = useState(0);
+  const [blur, setBlur] = useState(0);
+  const [grayscale, setGrayscale] = useState(false);
+  const [sepia, setSepia] = useState(false);
+  
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!canvas || !e.target.files || e.target.files.length === 0) return;
     
@@ -29,7 +40,7 @@ export const ImagePanel = ({ canvas }: PanelProps) => {
           src: event.target?.result as string
         }]);
         
-        toast.success("Image uploaded successfully");
+        toast.success("Resim başarıyla yüklendi");
         
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -63,7 +74,7 @@ export const ImagePanel = ({ canvas }: PanelProps) => {
       canvas.add(fabricImage);
       canvas.setActiveObject(fabricImage);
       canvas.renderAll();
-      toast.success("Image added to canvas");
+      toast.success("Resim tuvale eklendi");
     };
   };
 
@@ -89,13 +100,103 @@ export const ImagePanel = ({ canvas }: PanelProps) => {
       })
       .catch(err => {
         console.error("Error loading image:", err);
-        toast.error("Failed to load image");
+        toast.error("Resim yüklenemedi");
       });
+  };
+  
+  const applyFilters = () => {
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject || activeObject.type !== 'image') {
+      toast.error("Lütfen önce bir resim seçin");
+      return;
+    }
+    
+    const imgObj = activeObject as FabricImage;
+    
+    // Build filter CSS
+    let filterString = '';
+    
+    if (brightness !== 0) {
+      filterString += `brightness(${100 + brightness}%) `;
+    }
+    
+    if (contrast !== 0) {
+      filterString += `contrast(${100 + contrast}%) `;
+    }
+    
+    if (saturation !== 0) {
+      filterString += `saturate(${100 + saturation}%) `;
+    }
+    
+    if (blur > 0) {
+      filterString += `blur(${blur}px) `;
+    }
+    
+    if (grayscale) {
+      filterString += 'grayscale(100%) ';
+    }
+    
+    if (sepia) {
+      filterString += 'sepia(100%) ';
+    }
+    
+    // Apply CSS filters
+    imgObj.filters = [];
+    
+    if (filterString) {
+      // @ts-ignore - fabric typings issue
+      imgObj.filters.push(new fabric.Image.filters.BlendColor({
+        color: '#000000',
+        mode: 'tint',
+        alpha: 0, // This is a hack to just apply the CSS filter
+      }));
+      
+      // Set the CSS filter directly
+      if (imgObj._element) {
+        imgObj._element.style.filter = filterString.trim();
+      }
+    } else {
+      // Reset filters
+      if (imgObj._element) {
+        imgObj._element.style.filter = '';
+      }
+    }
+    
+    imgObj.applyFilters();
+    canvas.renderAll();
+    toast.success("Filtreler uygulandı");
+  };
+  
+  const resetFilters = () => {
+    setBrightness(0);
+    setContrast(0);
+    setSaturation(0);
+    setBlur(0);
+    setGrayscale(false);
+    setSepia(false);
+    
+    if (!canvas) return;
+    
+    const activeObject = canvas.getActiveObject();
+    if (!activeObject || activeObject.type !== 'image') return;
+    
+    const imgObj = activeObject as FabricImage;
+    imgObj.filters = [];
+    
+    if (imgObj._element) {
+      imgObj._element.style.filter = '';
+    }
+    
+    imgObj.applyFilters();
+    canvas.renderAll();
+    toast.success("Filtreler sıfırlandı");
   };
 
   return (
     <div className="space-y-4">
-      <div className="text-xs text-neutral-500 mb-4">EXAMPLE IMAGES</div>
+      <div className="text-xs text-neutral-500 mb-4">ÖRNEK RESİMLER</div>
       <div className="grid grid-cols-2 gap-2">
         <button 
           onClick={() => addExampleImage("https://picsum.photos/id/237/200/300")}
@@ -137,6 +238,116 @@ export const ImagePanel = ({ canvas }: PanelProps) => {
             className="max-h-full max-w-full object-contain"
           />
         </button>
+      </div>
+      
+      <div>
+        <Button 
+          onClick={() => setShowFilters(!showFilters)} 
+          variant="outline" 
+          className="w-full mt-4 flex items-center gap-2"
+        >
+          <Filter size={16} /> Resim Filtreleri {showFilters ? '⬆️' : '⬇️'}
+        </Button>
+        
+        {showFilters && (
+          <div className="mt-4 p-3 bg-neutral-800/50 rounded-md space-y-3">
+            <div className="text-xs font-medium text-neutral-300 mb-2">
+              Filtreler (bir resim seçiliyken aktif olur)
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span>Parlaklık</span>
+                <span>{brightness}%</span>
+              </div>
+              <Slider
+                min={-100}
+                max={100}
+                step={5}
+                value={[brightness]}
+                onValueChange={(value) => setBrightness(value[0])}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span>Kontrast</span>
+                <span>{contrast}%</span>
+              </div>
+              <Slider
+                min={-100}
+                max={100}
+                step={5}
+                value={[contrast]}
+                onValueChange={(value) => setContrast(value[0])}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span>Doygunluk</span>
+                <span>{saturation}%</span>
+              </div>
+              <Slider
+                min={-100}
+                max={100}
+                step={5}
+                value={[saturation]}
+                onValueChange={(value) => setSaturation(value[0])}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between text-xs">
+                <span>Bulanıklık</span>
+                <span>{blur}px</span>
+              </div>
+              <Slider
+                min={0}
+                max={10}
+                step={0.5}
+                value={[blur]}
+                onValueChange={(value) => setBlur(value[0])}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between pt-2">
+              <Label htmlFor="grayscale" className="text-xs">Siyah-Beyaz</Label>
+              <Switch
+                id="grayscale"
+                checked={grayscale}
+                onCheckedChange={setGrayscale}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between pt-2">
+              <Label htmlFor="sepia" className="text-xs">Sepya</Label>
+              <Switch
+                id="sepia"
+                checked={sepia}
+                onCheckedChange={setSepia}
+              />
+            </div>
+            
+            <div className="flex gap-2 pt-2">
+              <Button 
+                size="sm" 
+                className="flex-1"
+                onClick={applyFilters}
+              >
+                Uygula
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="flex-1"
+                onClick={resetFilters}
+              >
+                Sıfırla
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

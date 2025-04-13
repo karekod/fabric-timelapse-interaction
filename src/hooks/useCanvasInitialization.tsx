@@ -29,9 +29,8 @@ export function useCanvasInitialization({
       backgroundColor: "#0f1116",
     });
 
-    // Initialize with an empty canvas - no welcome text
-
-    setTimelineLayers([]); // Start with empty timeline layers
+    // Start with empty timeline layers
+    setTimelineLayers([]); 
 
     fabricCanvas.on("selection:created", (e) => {
       const selectedObj = fabricCanvas.getActiveObject() as ExtendedFabricObject;

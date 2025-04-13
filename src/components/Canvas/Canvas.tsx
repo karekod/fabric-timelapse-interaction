@@ -6,6 +6,7 @@ import { CanvasArea } from "./CanvasArea";
 import { TimelineSection } from "./TimelineSection";
 import { useCanvasState } from "@/hooks/useCanvasState";
 import { useCanvasInitialization } from "@/hooks/useCanvasInitialization";
+import { FloatingToolbar } from "./FloatingToolbar";
 
 export const Canvas = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -41,6 +42,12 @@ export const Canvas = () => {
             selectedObject={selectedObject}
           />
           <CanvasArea canvasRef={canvasRef} />
+          {selectedObject && (
+            <FloatingToolbar 
+              canvas={canvas} 
+              selectedObject={selectedObject} 
+            />
+          )}
         </div>
         <TimelineSection 
           isPlaying={isPlaying}
